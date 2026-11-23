@@ -16,10 +16,34 @@
 #include <KUrlComboBox>
 
 #include <QAbstractButton>
+#include <QApplication>
+#include <QFontInfo>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+
+namespace
+{
+class BooneRegularCrumbs : public QObject
+{
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        if (event->type() == QEvent::Polish && watched->inherits("KDEPrivate::KUrlNavigatorButton")) {
+            auto *button = static_cast<QWidget *>(watched);
+            QFont regular = button->font();
+            regular.setBold(false);
+            regular.setStyleName(QFontInfo(regular).styleName());
+            button->setFont(regular);
+        }
+        return false;
+    }
+};
+}
 
 DolphinUrlNavigator::DolphinUrlNavigator(QWidget *parent)
     : DolphinUrlNavigator(QUrl(), parent)
@@ -47,6 +71,18 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
                         "about the basic and advanced features of the location bar "
                         "<link url='help:/dolphin/location-bar.html'>click here</link>. "
                         "This will open the dedicated page in the Handbook.</para>"));
+
+    // BOONE: Vista's breadcrumb is all one weight; KIO draws the current folder in bold.
+    // Each crumb button's font is pinned to its regular face, so "bold" picks that same face
+    // (synthetic emboldening is switched off in main.cpp). KIO makes crumbs as folders are
+    // entered and they don't inherit a style name, so it is done as each one is polished.
+    if (qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+        static QObject *regularCrumbs = nullptr;
+        if (!regularCrumbs) {
+            regularCrumbs = new BooneRegularCrumbs(qApp);
+            qApp->installEventFilter(regularCrumbs);
+        }
+    }
 
     DolphinUrlNavigatorsController::registerDolphinUrlNavigator(this);
 

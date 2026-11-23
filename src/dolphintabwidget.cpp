@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QDropEvent>
 #include <QStackedWidget>
+#include <QStyle>
 
 DolphinTabWidget::DolphinTabWidget(DolphinNavigatorsWidgetAction *navigatorsWidget, QWidget *parent)
     : QTabWidget(parent)
@@ -489,9 +490,23 @@ void DolphinTabWidget::renameTab(int index, const QString &name)
     updateTabName(index);
 }
 
+// BOONE: the style sheet sets Vista spacing between the command bar and the tabs, only while
+// the tab bar shows (with one tab the file list sits right under the command bar)
+static void booneMarkTabBarShown(QTabWidget *widget)
+{
+    const bool shown = !widget->tabBarAutoHide() || widget->count() > 1;
+    if (widget->property("booneTabs").toBool() != shown) {
+        widget->setProperty("booneTabs", shown);
+        widget->style()->unpolish(widget);
+        widget->style()->polish(widget);
+        widget->update();
+    }
+}
+
 void DolphinTabWidget::tabInserted(int index)
 {
     QTabWidget::tabInserted(index);
+    booneMarkTabBarShown(this);
 
     if (tabBar()->isVisible()) {
         // Resolve all pending tab icons
@@ -514,6 +529,7 @@ void DolphinTabWidget::tabInserted(int index)
 void DolphinTabWidget::tabRemoved(int index)
 {
     QTabWidget::tabRemoved(index);
+    booneMarkTabBarShown(this);
 
     Q_EMIT tabCountChanged(count());
     m_lastViewedTab->setActive(true);
