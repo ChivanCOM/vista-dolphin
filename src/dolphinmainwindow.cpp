@@ -1572,13 +1572,12 @@ void DolphinMainWindow::updateHamburgerMenu()
     if (!menu) {
         menu = new QMenu(this);
         hamburgerMenu->setMenu(menu);
-        hamburgerMenu->hideActionsOf(ac->action(QStringLiteral("basic_actions"))->menu());
+        // BOONE: Vista's Organize menu lists Cut, Copy, Paste, Rename... itself, so they are
+        // not hidden as "already in the basic actions menu"
         hamburgerMenu->hideActionsOf(qobject_cast<KToolBarPopupAction *>(ac->action(QStringLiteral("zoom")))->popupMenu());
     } else {
         menu->clear();
     }
-    const QList<QAction *> toolbarActions = toolBar()->actions();
-
     if (!toolBar()->isVisible()) {
         // If neither the menu bar nor the toolbar are visible, these actions should be available.
         menu->addAction(ac->action(KStandardAction::name(KStandardAction::ShowMenubar)));
@@ -1586,60 +1585,25 @@ void DolphinMainWindow::updateHamburgerMenu()
         menu->addSeparator();
     }
 
-    // This group of actions (until the next separator) contains all the most basic actions
-    // necessary to use Dolphin effectively.
-    menu->addAction(ac->action(QStringLiteral("go_back")));
-    menu->addAction(ac->action(QStringLiteral("go_forward")));
-
-    menu->addMenu(m_newFileMenu->menu());
-    if (!toolBar()->isVisible() || !toolbarActions.contains(ac->action(QStringLiteral("toggle_selection_mode_tool_bar")))) {
-        menu->addAction(ac->action(QStringLiteral("toggle_selection_mode")));
-    }
-    menu->addAction(ac->action(QStringLiteral("basic_actions")));
-    menu->addAction(ac->action(KStandardAction::name(KStandardAction::Undo)));
-#if KIO_VERSION >= QT_VERSION_CHECK(6, 17, 0)
-    menu->addAction(ac->action(KStandardAction::name(KStandardAction::Redo)));
-#endif
-    if (!toolBar()->isVisible()
-        || (!toolbarActions.contains(ac->action(QStringLiteral("toggle_search")))
-            && !toolbarActions.contains(ac->action(QStringLiteral("open_preferred_search_tool"))))) {
-        menu->addAction(ac->action(KStandardAction::name(KStandardAction::Find)));
-        // This way a search action will only be added if none of the three available
-        // search actions is present on the toolbar.
-    }
-    if (!toolBar()->isVisible() || !toolbarActions.contains(ac->action(QStringLiteral("toggle_filter")))) {
-        menu->addAction(ac->action(QStringLiteral("show_filter_bar")));
-        // This way a filter action will only be added if none of the two available
-        // filter actions is present on the toolbar.
-    }
-    menu->addSeparator();
-
-    // The second group of actions (up until the next separator) contains actions for opening
-    // additional views to interact with the file system.
-    menu->addAction(ac->action(QStringLiteral("file_new")));
-    menu->addAction(ac->action(QStringLiteral("new_tab")));
-    if (ac->action(QStringLiteral("undo_close_tab"))->isEnabled()) {
-        menu->addAction(ac->action(QStringLiteral("closed_tabs")));
-    }
-    menu->addAction(ac->action(QStringLiteral("open_terminal")));
-    menu->addSeparator();
-
-    // The third group contains actions to change what one sees in the view
-    // and to change the more general UI.
-    if (!toolBar()->isVisible()
-        || ((!toolbarActions.contains(ac->action(QStringLiteral("icons"))) && !toolbarActions.contains(ac->action(QStringLiteral("compact")))
-             && !toolbarActions.contains(ac->action(QStringLiteral("details"))) && !toolbarActions.contains(ac->action(QStringLiteral("view_mode"))))
-            && !toolbarActions.contains(ac->action(QStringLiteral("view_settings"))))) {
-        menu->addAction(ac->action(QStringLiteral("view_mode")));
-    }
-    if (!toolBar()->isVisible() || !toolbarActions.contains(ac->action(QStringLiteral("view_settings")))) {
-        menu->addAction(ac->action(QStringLiteral("show_hidden_files")));
-        menu->addAction(ac->action(QStringLiteral("sort")));
-        menu->addAction(ac->action(QStringLiteral("additional_info")));
-        if (!GeneralSettings::showStatusBar() || !GeneralSettings::showZoomSlider()) {
-            menu->addAction(ac->action(QStringLiteral("zoom")));
+    // BOONE: Windows Vista's Organize menu - New Folder; Cut, Copy, Paste, Undo, Redo,
+    // Select All; Layout; Folder and Search Options; Delete, Rename, Properties; Close
+    // (Dolphin's own extras stay reachable under Configure at the end).
+    auto add = [menu, ac](const QString &name) {
+        if (QAction *a = ac->action(name)) {
+            menu->addAction(a);
         }
-    }
+    };
+    add(QStringLiteral("create_dir"));
+    menu->addSeparator();
+    add(KStandardAction::name(KStandardAction::Cut));
+    add(KStandardAction::name(KStandardAction::Copy));
+    add(KStandardAction::name(KStandardAction::Paste));
+    add(KStandardAction::name(KStandardAction::Undo));
+#if KIO_VERSION >= QT_VERSION_CHECK(6, 17, 0)
+    add(KStandardAction::name(KStandardAction::Redo));
+#endif
+    add(KStandardAction::name(KStandardAction::SelectAll));
+    menu->addSeparator();
     // BOONE: Vista's Organize > Layout (Menu Bar, Details Pane, Preview Pane, Navigation Pane)
     auto layoutMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18nc("@action:inmenu Vista Organize menu", "Layout"));
     layoutMenu->addAction(ac->action(KStandardAction::name(KStandardAction::ShowMenubar)));
@@ -1658,6 +1622,12 @@ void DolphinMainWindow::updateHamburgerMenu()
             QProcess::startDetached(QStringLiteral("denairu-control-panel"), {QStringLiteral("--applet"), QStringLiteral("folderoptions")});
         });
     }
+    menu->addSeparator();
+    add(KStandardAction::name(KStandardAction::MoveToTrash));
+    add(KStandardAction::name(KStandardAction::RenameFile));
+    add(QStringLiteral("properties"));
+    menu->addSeparator();
+    menu->addAction(QIcon::fromTheme(QStringLiteral("window-close")), i18nc("@action:inmenu Vista Organize menu", "Close"), this, &QWidget::close);
     menu->addSeparator();
 
     // The "Configure" menu is not added to the actionCollection() because there is hardly
