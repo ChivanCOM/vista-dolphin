@@ -131,7 +131,15 @@ void KItemListWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
         drawItemStyleOption(painter, widget, activeState | QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_Item);
     }
 
-    if (m_hoverOpacity > 0.0) {
+    if (m_hoverOpacity > 0.0 && qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+        // BOONE: drawn directly, not through the item-sized cache, which would clip the
+        // highlight's padding beyond the item (List view) and make it narrower than a selection
+        const QStyle::State activeState(isActiveWindow() && widget->hasFocus() ? QStyle::State_Active | QStyle::State_Enabled : 0);
+        const qreal opacity = painter->opacity();
+        painter->setOpacity(m_hoverOpacity * opacity);
+        drawItemStyleOption(painter, widget, activeState | QStyle::State_MouseOver | QStyle::State_Item);
+        painter->setOpacity(opacity);
+    } else if (m_hoverOpacity > 0.0) {
         if (!m_hoverCache) {
             // Initialize the m_hoverCache pixmap to improve the drawing performance
             // when fading the hover background
