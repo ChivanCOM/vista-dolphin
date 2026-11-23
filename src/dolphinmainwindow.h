@@ -38,6 +38,7 @@ class DolphinBookmarkHandler;
 class DolphinViewActionHandler;
 namespace Boone
 {
+class CommandTasks;
 class DetailsPane;
 }
 class DolphinSettingsDialog;
@@ -812,6 +813,7 @@ private:
     KRecentFilesAction *m_recentFiles = nullptr;
 
     Boone::DetailsPane *m_detailsPane = nullptr; // BOONE: Vista's Details Pane
+    Boone::CommandTasks *m_commandTasks = nullptr; // BOONE: Vista's command bar tasks
 
     friend class DolphinMainWindowTest;
 };

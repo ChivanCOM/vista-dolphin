@@ -11,6 +11,8 @@
 
 #include "placespanel.h"
 
+#include "boone/placesdelegate.h"
+
 #include <QPalette>
 
 #include "dolphin_generalsettings.h"
@@ -48,6 +50,8 @@ PlacesPanel::PlacesPanel(QWidget *parent)
         vista.setColor(group, QPalette::WindowText, QColor(0x14, 0x14, 0x14));
     }
     setPalette(vista);
+    // drives with Vista's capacity bar under their name
+    setItemDelegate(new Boone::PlacesDelegate(this, itemDelegate()));
 
     setTeardownFunction([this](const QModelIndex &index) {
         slotTearDownRequested(index);

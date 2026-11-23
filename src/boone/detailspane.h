@@ -38,7 +38,15 @@ protected:
 
 private:
     void refresh();
-    void setPairs(const QList<QPair<QString, QString>> &pairs);
+    /** A grey key and its value; a capacity (0..1) shows Vista's bar instead of text. */
+    struct Pair {
+        QString key;
+        QString value;
+        qreal capacity = -1;
+    };
+    void setPairs(const QList<Pair> &pairs);
+    /** Vista's drive details: space used (as a bar), free, total, file system. */
+    bool showDrive(const QString &path);
     void showIcon(const QString &iconName);
     void requestPreview(const KFileItem &item);
 

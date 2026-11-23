@@ -5,8 +5,11 @@
 
 #include "detailspane.h"
 
+#include "capacitybar.h"
+#include "dolphinplacesmodelsingleton.h"
 #include "views/dolphinview.h"
 
+#include <KFilePlacesModel>
 #include <KIO/Global>
 #include <KIO/PreviewJob>
 #include <KLocalizedString>
@@ -22,6 +25,19 @@
 #include <QVBoxLayout>
 
 using namespace Boone;
+
+static QString booneplaceName(const QUrl &url)
+{
+    KFilePlacesModel *places = DolphinPlacesModelSingleton::instance().placesModel();
+    const QUrl wanted = url.adjusted(QUrl::StripTrailingSlash);
+    for (int row = 0; row < places->rowCount(); ++row) {
+        const QModelIndex index = places->index(row, 0);
+        if (places->url(index).adjusted(QUrl::StripTrailingSlash) == wanted) {
+            return places->text(index);
+        }
+    }
+    return QString();
+}
 
 namespace
 {
@@ -133,6 +149,12 @@ void DetailsPane::refresh()
         if (url.scheme().endsWith(QLatin1String("search"))) { // filenamesearch:, baloosearch:
             name = i18nc("@info Vista details pane", "Search Results");
         }
+        // a drive or other place by its place name ("DATA", "Internal Drive"), as Vista
+        // names drives rather than showing a path
+        const QString placeName = booneplaceName(url);
+        if (!placeName.isEmpty()) {
+            name = placeName;
+        }
         if (name.isEmpty()) {
             name = url.toDisplayString(QUrl::PreferLocalFile);
         }
@@ -140,7 +162,9 @@ void DetailsPane::refresh()
         showIcon(root.isNull() ? KIO::iconNameForUrl(url) : root.iconName());
         m_name->setText(name);
         m_summary->setText(m_statusText);
-        setPairs({});
+        if (!url.isLocalFile() || !isMountPoint(url.toLocalFile()) || !showDrive(url.toLocalFile())) {
+            setPairs({});
+        }
         return;
     }
 
@@ -157,7 +181,7 @@ void DetailsPane::refresh()
         showIcon(QStringLiteral("edit-select-all"));
         m_name->setText(i18ncp("@info Vista details pane", "%1 item selected", "%1 items selected", selection.count()));
         m_summary->clear();
-        QList<QPair<QString, QString>> pairs;
+        QList<Pair> pairs;
         if (files > 0) {
             pairs.append({i18nc("@label Vista details pane", "Size:"), KIO::convertSize(size)});
         }
@@ -170,7 +194,7 @@ void DetailsPane::refresh()
     showIcon(item.iconName());
     m_name->setText(item.text());
     m_summary->setText(item.mimeComment());
-    QList<QPair<QString, QString>> pairs;
+    QList<Pair> pairs;
     const QDateTime modified = item.time(KFileItem::ModificationTime);
     if (modified.isValid()) {
         pairs.append({i18nc("@label Vista details pane", "Date modified:"), QLocale().toString(modified, QLocale::ShortFormat)});
@@ -182,13 +206,34 @@ void DetailsPane::refresh()
     if (created.isValid()) {
         pairs.append({i18nc("@label Vista details pane", "Date created:"), QLocale().toString(created, QLocale::ShortFormat)});
     }
+    const QString local = item.localPath();
+    if (item.isDir() && !local.isEmpty() && isMountPoint(local) && showDrive(local)) {
+        return;
+    }
     setPairs(pairs);
     if (!item.isDir()) {
         requestPreview(item);
     }
 }
 
-void DetailsPane::setPairs(const QList<QPair<QString, QString>> &pairs)
+bool DetailsPane::showDrive(const QString &path)
+{
+    const DriveSpace space = driveSpace(path);
+    if (!space.isValid()) {
+        return false;
+    }
+    QList<Pair> pairs;
+    pairs.append({i18nc("@label Vista details pane", "Space used:"), QString(), space.used()});
+    pairs.append({i18nc("@label Vista details pane", "Space free:"), KIO::convertSize(space.free)});
+    pairs.append({i18nc("@label Vista details pane", "Total size:"), KIO::convertSize(space.total)});
+    if (!space.fileSystem.isEmpty()) {
+        pairs.append({i18nc("@label Vista details pane", "File system:"), space.fileSystem.toUpper()});
+    }
+    setPairs(pairs);
+    return true;
+}
+
+void DetailsPane::setPairs(const QList<Pair> &pairs)
 {
     while (QLayoutItem *child = m_pairs->takeAt(0)) {
         delete child->widget();
@@ -197,17 +242,25 @@ void DetailsPane::setPairs(const QList<QPair<QString, QString>> &pairs)
     // Vista fills the pairs top to bottom, three to a column: grey key right-aligned, value left
     int row = 0;
     int column = 0;
-    for (const auto &[key, value] : pairs) {
-        auto keyLabel = new QLabel(key, this);
+    for (const Pair &pair : pairs) {
+        auto keyLabel = new QLabel(pair.key, this);
         QPalette grey = keyLabel->palette();
         grey.setColor(QPalette::WindowText, KeyColor);
         keyLabel->setPalette(grey);
         keyLabel->setAlignment(Qt::AlignRight | Qt::AlignTop);
-        auto valueLabel = new QLabel(value, this);
-        valueLabel->setTextFormat(Qt::PlainText);
-        valueLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
         m_pairs->addWidget(keyLabel, row, column);
-        m_pairs->addWidget(valueLabel, row, column + 1);
+        if (pair.capacity >= 0) {
+            // the bar stands on the text line, as tall as Vista's
+            auto bar = new CapacityBar(pair.capacity, this);
+            bar->setFixedHeight(keyLabel->sizeHint().height());
+            bar->setFixedWidth(bar->sizeHint().width());
+            m_pairs->addWidget(bar, row, column + 1, Qt::AlignLeft | Qt::AlignVCenter);
+        } else {
+            auto valueLabel = new QLabel(pair.value, this);
+            valueLabel->setTextFormat(Qt::PlainText);
+            valueLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+            m_pairs->addWidget(valueLabel, row, column + 1);
+        }
         if (++row == 3) {
             row = 0;
             column += 2;

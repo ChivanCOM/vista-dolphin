@@ -9,6 +9,7 @@
 #include "dolphinmainwindow.h"
 #include <QProcess>
 #include <QDockWidget>
+#include "boone/commandtasks.h"
 #include "boone/detailspane.h"
 #include "boone/searchbox.h"
 
@@ -213,6 +214,18 @@ DolphinMainWindow::DolphinMainWindow()
     const bool usePhoneUi{KRuntimePlatform::runtimePlatform().contains(QLatin1String("phone"))};
     setupGUI(Save | Create | ToolBar, usePhoneUi ? QStringLiteral("dolphinuiforphones.rc") : QString() /* load the default dolphinui.rc file */);
     stateChanged(QStringLiteral("new_file"));
+
+    // BOONE: Vista's command bar tasks, after Organize and Views, following the selection
+    m_commandTasks = new Boone::CommandTasks(this,
+                                             {[this](const QUrl &url) {
+                                                  m_activeViewContainer->setUrl(url);
+                                              },
+                                              [this](const QUrl &url) {
+                                                  m_tabWidget->openNewTab(url, QUrl());
+                                              }});
+    if (m_activeViewContainer) {
+        m_commandTasks->setView(m_activeViewContainer->view());
+    }
 
     QClipboard *clipboard = QApplication::clipboard();
     connect(clipboard, &QClipboard::dataChanged, this, &DolphinMainWindow::updatePasteAction);
@@ -1674,6 +1687,9 @@ void DolphinMainWindow::activeViewChanged(DolphinViewContainer *viewContainer)
     m_activeViewContainer = viewContainer;
     if (m_detailsPane) {
         m_detailsPane->setView(viewContainer->view());
+    }
+    if (m_commandTasks) {
+        m_commandTasks->setView(viewContainer->view());
     }
 
     if (oldViewContainer) {

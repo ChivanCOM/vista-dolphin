@@ -281,7 +281,10 @@ install(FILES dolphinpartactions.desktop DESTINATION "${KDE_INSTALL_DATADIR}/dol
 add_library(dolphinstatic STATIC)
 
 target_sources(dolphinstatic PRIVATE
+    boone/capacitybar.cpp
+    boone/commandtasks.cpp
     boone/detailspane.cpp
+    boone/placesdelegate.cpp
     boone/searchbox.cpp
     admin/bar.cpp
     admin/workerintegration.cpp

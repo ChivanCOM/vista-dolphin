@@ -12,6 +12,8 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QPainter>
 #include <QStyleOptionHeader>
+#include <QPolygonF>
+#include <QLinearGradient>
 
 namespace
 {
@@ -196,6 +198,79 @@ qreal KItemListHeaderWidget::minimumColumnWidth() const
     return fontMetrics.height() * 4;
 }
 
+// BOONE: Windows Vista's column header, measured from Vista Explorer: a white upper part over
+// a light grey gradient, a #d5d5d5 line along the bottom, thin grey separators; the sorted
+// column pale blue with #99d7fb edges and a small chevron at the top (pointing up when
+// ascending); hover and press in brighter blues.
+static bool booneHeader()
+{
+    static const bool on = qEnvironmentVariableIsSet("DENAIRU_SESSION");
+    return on;
+}
+
+namespace
+{
+enum BooneLook { BooneNormal, BooneSorted, BooneHover, BoonePressed };
+}
+
+static void booneFillSection(QPainter *painter, const QRectF &rect, BooneLook look, bool separator)
+{
+    struct Colors {
+        const char *top, *bottomA, *bottomB, *edge, *line;
+    };
+    static const Colors looks[] = {
+        {"#ffffff", "#f8f8f9", "#f2f3f4", nullptr, "#d5d5d5"},
+        {"#f2f9fc", "#dff1fa", "#d9eff8", "#99d7fb", "#99d7fb"},
+        {"#e3f7ff", "#c9ecfd", "#bde6fd", "#88cbeb", "#88cbeb"},
+        {"#bce4f9", "#a5daf6", "#8dcff3", "#61a2c3", "#61a2c3"},
+    };
+    const Colors &c = looks[look];
+    const QRect r = rect.toAlignedRect();
+    if (r.width() <= 0) {
+        return;
+    }
+    const int h = r.height();
+    const int split = qRound((h - 1) * 0.41);
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, false);
+    painter->fillRect(QRect(r.left(), 0, r.width(), split), QColor(c.top));
+    QLinearGradient lower(0, split, 0, h - 1);
+    lower.setColorAt(0, QColor(c.bottomA));
+    lower.setColorAt(1, QColor(c.bottomB));
+    painter->fillRect(QRect(r.left(), split, r.width(), h - 1 - split), lower);
+    painter->fillRect(QRect(r.left(), h - 1, r.width(), 1), QColor(c.line));
+    if (c.edge) {
+        painter->fillRect(QRect(r.left(), 0, 1, h), QColor(c.edge));
+        painter->fillRect(QRect(r.right(), 0, 1, h), QColor(c.edge));
+    } else if (separator) {
+        QLinearGradient sep(0, 0, 0, h - 1);
+        sep.setColorAt(0, QColor("#f1f1f1"));
+        sep.setColorAt(1, QColor("#dedee0"));
+        painter->fillRect(QRect(r.right(), 0, 1, h - 1), sep);
+    }
+    painter->restore();
+}
+
+static void booneSortChevron(QPainter *painter, const QRectF &rect, bool ascending)
+{
+    const qreal cx = qRound(rect.center().x()) + 0.5;
+    const qreal top = 1.5, bottom = 4.5;
+    QPolygonF chevron;
+    if (ascending) {
+        chevron << QPointF(cx - 3.5, bottom) << QPointF(cx, top) << QPointF(cx + 3.5, bottom);
+    } else {
+        chevron << QPointF(cx - 3.5, top) << QPointF(cx, bottom) << QPointF(cx + 3.5, top);
+    }
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing, true);
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(QPen(QColor("#84ccf1"), 1.0));
+    painter->drawPolyline(chevron.translated(0, 1));
+    painter->setPen(QPen(QColor("#336071"), 1.2));
+    painter->drawPolyline(chevron);
+    painter->restore();
+}
+
 void KItemListHeaderWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
     Q_UNUSED(option)
@@ -208,6 +283,9 @@ void KItemListHeaderWidget::paint(QPainter *painter, const QStyleOptionGraphicsI
     // Draw roles
     painter->setFont(font());
     painter->setPen(palette().text().color());
+    if (booneHeader()) {
+        booneFillSection(painter, QRectF(0, 0, size().width(), size().height()), BooneNormal, false);
+    }
 
     qreal x = -m_offset + m_leftPadding + unusedSpace();
     int orderIndex = 0;
@@ -443,6 +521,28 @@ void KItemListHeaderWidget::slotSortOrderChanged(Qt::SortOrder current, Qt::Sort
 
 void KItemListHeaderWidget::paintRole(QPainter *painter, const QByteArray &role, const QRectF &rect, int orderIndex, QWidget *widget) const
 {
+    if (booneHeader()) {
+        const bool sorted = m_model->sortRole() == role;
+        BooneLook look = sorted ? BooneSorted : BooneNormal;
+        if (m_pressedRoleIndex == orderIndex) {
+            look = BoonePressed;
+        } else if (m_hoveredIndex == orderIndex) {
+            look = BooneHover;
+        }
+        booneFillSection(painter, rect, look, true);
+        if (sorted) {
+            booneSortChevron(painter, rect, m_model->sortOrder() == Qt::AscendingOrder);
+        }
+        const QRectF textRect = rect.adjusted(7, 0, -5, -1);
+        const QString text = QFontMetricsF(font()).elidedText(m_model->roleDescription(role), Qt::ElideRight, textRect.width());
+        painter->save();
+        painter->setFont(font());
+        painter->setPen(palette().text().color());
+        painter->drawText(textRect, Qt::AlignLeft | Qt::AlignVCenter, text);
+        painter->restore();
+        return;
+    }
+
     // The following code is based on the code from QHeaderView::paintSection().
     // SPDX-FileCopyrightText: 2011 Nokia Corporation and/or its subsidiary(-ies).
     QStyleOptionHeader option;

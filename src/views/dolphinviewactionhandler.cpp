@@ -410,7 +410,21 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     viewSettings->addAction(showHiddenFiles);
     viewSettings->addAction(adjustViewProps);
     viewSettings->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
-    connect(viewSettings, &KActionMenu::triggered, viewModeActions, &KSelectAction::triggered);
+    // BOONE: as in Vista, clicking Views itself steps through List, Details, Tiles and Large
+    // Icons; the arrow opens the full list
+    connect(viewSettings, &KActionMenu::triggered, this, [this]() {
+        static const int cycle[] = {4, 5, 6, 1}; // List, Details, Tiles, Large Icons
+        int next = 0;
+        for (int i = 0; i < 4; ++i) {
+            if (m_booneViews.value(cycle[i]).action && m_booneViews.value(cycle[i]).action->isChecked()) {
+                next = (i + 1) % 4;
+                break;
+            }
+        }
+        if (QAction *a = m_booneViews.value(cycle[next]).action) {
+            a->trigger();
+        }
+    });
     // HACK KActionMenu doesn't set a parent for its menu() causing accessibility traversal issues
     viewSettings->menu()->setParent(QApplication::activeWindow());
 }
