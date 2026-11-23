@@ -12,6 +12,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QMimeData>
+#include <QPainter>
 #include <QTimer>
 
 class PreventFocusWhileHidden : public QObject
@@ -212,3 +213,24 @@ void DolphinTabBar::updateAutoActivationTimer(const int index)
 }
 
 #include "moc_dolphintabbar.cpp"
+
+// BOONE: the tab strip's base line (the tabs' outline colour) runs under every tab but the
+// current one, which stays open into the folder below. DolphinTabWidget continues it
+// beside the tabs.
+void DolphinTabBar::paintEvent(QPaintEvent *event)
+{
+    QTabBar::paintEvent(event);
+    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION") || count() < 1) {
+        return;
+    }
+    QPainter painter(this);
+    painter.setPen(QColor(0x89, 0x8c, 0x95));
+    const int y = rect().bottom();
+    const QRect current = tabRect(currentIndex());
+    if (current.isValid()) {
+        painter.drawLine(0, y, current.left(), y);
+        painter.drawLine(current.right(), y, width() - 1, y);
+    } else {
+        painter.drawLine(0, y, width() - 1, y);
+    }
+}

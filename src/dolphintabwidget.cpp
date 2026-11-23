@@ -21,6 +21,7 @@
 
 #include <QApplication>
 #include <QDropEvent>
+#include <QPainter>
 #include <QStackedWidget>
 #include <QStyle>
 
@@ -501,6 +502,20 @@ static void booneMarkTabBarShown(QTabWidget *widget)
         widget->style()->polish(widget);
         widget->update();
     }
+}
+
+void DolphinTabWidget::paintEvent(QPaintEvent *event)
+{
+    QTabWidget::paintEvent(event);
+    // BOONE: the tab strip's base line beside the tabs (see DolphinTabBar::paintEvent())
+    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION") || !property("booneTabs").toBool() || !tabBar()->isVisible()) {
+        return;
+    }
+    QPainter painter(this);
+    painter.setPen(QColor(0x89, 0x8c, 0x95));
+    const int y = tabBar()->geometry().bottom();
+    painter.drawLine(0, y, tabBar()->geometry().left() - 1, y);
+    painter.drawLine(tabBar()->geometry().right() + 1, y, width() - 1, y);
 }
 
 void DolphinTabWidget::tabInserted(int index)

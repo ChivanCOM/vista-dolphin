@@ -261,7 +261,7 @@ QRectF KItemListViewLayouter::groupHeaderRect(int index) const
         pos.ry() -= m_groupHeaderHeight;
         size = QSizeF(m_size.width(), m_groupHeaderHeight);
     } else {
-        pos.ry() = 0;
+        pos.ry() = m_headerHeight; // BOONE: below a header
 
         // Determine the maximum width used in the current column. As the
         // scroll-direction is Qt::Horizontal and m_itemRects is accessed
@@ -285,7 +285,7 @@ QRectF KItemListViewLayouter::groupHeaderRect(int index) const
             ++index;
         }
 
-        size = QSizeF(headerWidth, m_size.height());
+        size = QSizeF(headerWidth, m_size.height() - m_headerHeight);
 
         if (QGuiApplication::isRightToLeft()) {
             pos.setX(firstItemRect.right() + m_itemMargin.width() - size.width());
@@ -387,6 +387,9 @@ void KItemListViewLayouter::doLayout()
         itemMargin.transpose();
         size.transpose();
         size.rwidth() -= m_statusBarOffset;
+        // BOONE: a header above a horizontally scrolling layout (Vista's List and Tiles
+        // views) takes height away, not width
+        size.rwidth() -= m_headerHeight;
 
         if (grouped) {
             // In the horizontal scrolling case all groups are aligned
@@ -424,6 +427,9 @@ void KItemListViewLayouter::doLayout()
         // flipped like the other properties.
         currentOffset += m_groupHeaderHeight;
     }
+    if (horizontalScrolling) {
+        currentOffset += m_headerHeight; // BOONE: the rows start below the header
+    }
 
     if (isRightToLeft) {
         for (int column = 0; column < m_columnCount; ++column) {
@@ -452,7 +458,7 @@ void KItemListViewLayouter::doLayout()
     }
     m_rowOffsets.resize(numberOfRows);
 
-    qreal y = m_headerHeight + itemMargin.height();
+    qreal y = (horizontalScrolling ? 0 : m_headerHeight) + itemMargin.height();
     int row = 0;
 
     int index = 0;

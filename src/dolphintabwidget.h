@@ -239,6 +239,7 @@ private Q_SLOTS:
 protected:
     void tabInserted(int index) override;
     void tabRemoved(int index) override;
+    void paintEvent(QPaintEvent *event) override;
 
 private:
     /**

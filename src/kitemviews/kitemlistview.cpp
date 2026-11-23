@@ -2316,7 +2316,7 @@ void KItemListView::updateGroupHeaderLayout(KItemListWidget *widget)
         groupHeader->setPos(x, -groupHeaderRect.height());
         groupHeader->resize(width, groupHeaderRect.size().height());
     } else {
-        groupHeader->setPos(groupHeaderRect.x() - itemRect.x(), -widget->y());
+        groupHeader->setPos(groupHeaderRect.x() - itemRect.x(), groupHeaderRect.y() - widget->y());
         groupHeader->resize(groupHeaderRect.size());
     }
 }
