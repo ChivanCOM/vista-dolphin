@@ -282,6 +282,7 @@ add_library(dolphinstatic STATIC)
 
 target_sources(dolphinstatic PRIVATE
     boone/detailspane.cpp
+    boone/searchbox.cpp
     admin/bar.cpp
     admin/workerintegration.cpp
     animatedheightwidget.cpp

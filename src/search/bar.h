@@ -82,6 +82,18 @@ public:
      */
     void setVisible(bool visible, Animated animated);
 
+    /** BOONE: the search term comes from Vista's search box on the toolbar. */
+    void setSearchTermFromOutside(const QString &text);
+    /** BOONE: Enter in that box. */
+    void commitFromOutside();
+    /** BOONE: hides this bar's own text field while the toolbar box stands in for it. */
+    void setTermEditorShown(bool shown);
+
+private:
+    QWidget *m_booneSpacer = nullptr; // keeps Filter left and Close right without the text field
+
+public:
+
     /**
      * @returns false, when the search UI has not yet been changed to search for anything specific. For example when no search term has been entered yet.
      *          Otherwise returns true, for example when a search term has been entered or there is a search request for all files of a specific file type or

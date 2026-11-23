@@ -160,6 +160,15 @@ public:
      */
     void setFocusToSearchBar();
 
+    /** BOONE: search for @p text from Vista's toolbar search box (shows the search bar's filters). */
+    void booneSearch(const QString &text);
+    /** BOONE: Enter in that box. */
+    void booneCommitSearch();
+    /** BOONE: the current search term, empty when not searching. */
+    QString booneSearchTerm() const;
+    /** BOONE: true once the toolbar box is in use; the search bar then hides its own field. */
+    static bool s_booneExternalSearchBox;
+
     /**
      * Sets a selection mode that is useful for quick and easy selecting or deselecting of files.
      * This method is the central authority about enabling or disabling selection mode:

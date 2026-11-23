@@ -95,6 +95,10 @@ Bar::Bar(std::shared_ptr<const DolphinQuery> dolphinQuery, QWidget *parent)
     firstRowLayout->setContentsMargins(0, 0, 0, 0);
     firstRowLayout->addWidget(m_searchTermEditor);
     firstRowLayout->addWidget(filterButton);
+    m_booneSpacer = new QWidget(contentsContainer);
+    m_booneSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    m_booneSpacer->setVisible(false);
+    firstRowLayout->addWidget(m_booneSpacer);
     firstRowLayout->addWidget(closeButton);
 
     // Create "From Here" and "Your files" buttons
@@ -179,6 +183,25 @@ void Bar::setSearchPath(const QUrl &url)
     DolphinQuery searchConfigurationCopy = *m_searchConfiguration;
     searchConfigurationCopy.setSearchPath(url);
     updateStateToMatch(std::make_shared<const DolphinQuery>(std::move(searchConfigurationCopy)));
+}
+
+void Bar::setSearchTermFromOutside(const QString &text)
+{
+    if (m_searchTermEditor->text() != text) {
+        m_searchTermEditor->setText(text);
+        slotSearchTermEdited(text);
+    }
+}
+
+void Bar::commitFromOutside()
+{
+    commitCurrentConfiguration();
+}
+
+void Bar::setTermEditorShown(bool shown)
+{
+    m_searchTermEditor->setVisible(shown);
+    m_booneSpacer->setVisible(!shown);
 }
 
 void Bar::selectAll()

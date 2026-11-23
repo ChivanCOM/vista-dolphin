@@ -10,6 +10,7 @@
 #include <QProcess>
 #include <QDockWidget>
 #include "boone/detailspane.h"
+#include "boone/searchbox.h"
 
 #include "admin/workerintegration.h"
 #include "dolphin_generalsettings.h"
@@ -947,6 +948,13 @@ void DolphinMainWindow::paste()
 
 void DolphinMainWindow::find()
 {
+    // BOONE: like Vista, Ctrl+F goes to the search box when it is on the toolbar
+    auto searchBox = qobject_cast<Boone::SearchBoxAction *>(actionCollection()->action(QStringLiteral("boone_search_box")));
+    if (searchBox && searchBox->field() && searchBox->field()->isVisible()) {
+        searchBox->field()->setFocus(Qt::ShortcutFocusReason);
+        searchBox->field()->selectAll();
+        return;
+    }
     m_activeViewContainer->setSearchBarVisible(true);
     m_activeViewContainer->setFocusToSearchBar();
 }
@@ -955,6 +963,12 @@ void DolphinMainWindow::updateSearchAction()
 {
     QAction *toggleSearchAction = actionCollection()->action(QStringLiteral("toggle_search"));
     toggleSearchAction->setChecked(m_activeViewContainer->isSearchBarVisible());
+    // BOONE: the toolbar box shows what the active view is searching for (nothing when not)
+    // (never while someone is typing in it: the search bar opens before it has the term)
+    auto searchBox = qobject_cast<Boone::SearchBoxAction *>(actionCollection()->action(QStringLiteral("boone_search_box")));
+    if (searchBox && !(searchBox->field() && searchBox->field()->hasFocus() && m_activeViewContainer->isSearchBarVisible())) {
+        searchBox->setText(m_activeViewContainer->booneSearchTerm());
+    }
 }
 
 void DolphinMainWindow::updatePasteAction()
@@ -1982,6 +1996,24 @@ void DolphinMainWindow::setupActions()
             m_activeViewContainer->setSearchBarVisible(false);
         }
     });
+
+    // BOONE: Windows Vista's search box, for the address-bar row
+    auto searchBox = new Boone::SearchBoxAction(this);
+    actionCollection()->addAction(QStringLiteral("boone_search_box"), searchBox);
+    connect(searchBox, &Boone::SearchBoxAction::searchTermEdited, this, [this](const QString &text) {
+        DolphinViewContainer::s_booneExternalSearchBox = true;
+        if (text.isEmpty()) {
+            if (m_activeViewContainer->isSearchBarVisible()) {
+                m_activeViewContainer->setSearchBarVisible(false);
+            }
+            return;
+        }
+        m_activeViewContainer->booneSearch(text);
+    });
+    connect(searchBox, &Boone::SearchBoxAction::searchCommitted, this, [this]() {
+        m_activeViewContainer->booneCommitSearch();
+    });
+    toggleSearchAction->setVisible(false); // the box stands in for Dolphin's search button
 
     QAction *toggleSelectionModeAction = actionCollection()->addAction(QStringLiteral("toggle_selection_mode"));
     // i18n: This action toggles a selection mode.

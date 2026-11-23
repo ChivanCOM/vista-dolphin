@@ -126,6 +126,9 @@ void DetailsPane::refresh()
         const KFileItem root = m_view->rootItem();
         const QUrl url = m_view->url();
         QString name = url.adjusted(QUrl::StripTrailingSlash).fileName();
+        if (url.scheme().endsWith(QLatin1String("search"))) { // filenamesearch:, baloosearch:
+            name = i18nc("@info Vista details pane", "Search Results");
+        }
         if (name.isEmpty()) {
             name = url.toDisplayString(QUrl::PreferLocalFile);
         }

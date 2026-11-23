@@ -362,6 +362,7 @@ void DolphinViewContainer::setSearchBarVisible(bool visible)
         m_topLayout->addWidget(m_searchBar, positionFor.searchBar, 0);
     }
 
+    m_searchBar->setTermEditorShown(!s_booneExternalSearchBox);
     m_searchBar->setVisible(true, WithAnimation);
 
     // The Search::Bar has been set visible but its state does not yet match with this view container or view.
@@ -391,6 +392,28 @@ void DolphinViewContainer::setSearchBarVisible(bool visible)
     // searching "Everywhere" to "Here" and it is everybody's guess what "Here" is supposed to mean in that context… We'll simply fall back to the user's home
     // path for lack of a better option.
     m_searchBar->updateStateToMatch(std::make_shared<const Search::DolphinQuery>(m_urlNavigator->locationUrl(), QUrl::fromUserInput(QDir::homePath())));
+}
+
+bool DolphinViewContainer::s_booneExternalSearchBox = false;
+
+void DolphinViewContainer::booneSearch(const QString &text)
+{
+    if (!isSearchBarVisible()) {
+        setSearchBarVisible(true);
+    }
+    m_searchBar->setSearchTermFromOutside(text);
+}
+
+void DolphinViewContainer::booneCommitSearch()
+{
+    if (m_searchBar && isSearchBarVisible()) {
+        m_searchBar->commitFromOutside();
+    }
+}
+
+QString DolphinViewContainer::booneSearchTerm() const
+{
+    return (m_searchBar && isSearchBarVisible()) ? m_searchBar->text() : QString();
 }
 
 bool DolphinViewContainer::isSearchBarVisible() const
