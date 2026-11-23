@@ -8,6 +8,7 @@
 
 #include <KLocalizedString>
 
+#include <QApplication>
 #include <QDragEnterEvent>
 #include <QInputDialog>
 #include <QMenu>
@@ -35,6 +36,28 @@ protected:
             return false;
         }
     };
+};
+
+// BOONE: the theme's close glyph sits at the bottom of its 16 px icon, so a button centred in
+// the tab shows its X low. Lift each close button 2 px whenever the tab bar places it.
+class BooneLiftCloseButton : public QObject
+{
+public:
+    using QObject::QObject;
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *ev) override
+    {
+        if (ev->type() == QEvent::Move) {
+            auto *button = static_cast<QWidget *>(obj);
+            if (button->pos() != button->property("booneLifted").toPoint()) {
+                const QPoint lifted = button->pos() - QPoint(0, 2);
+                button->setProperty("booneLifted", lifted);
+                button->move(lifted);
+            }
+        }
+        return false;
+    }
 };
 
 DolphinTabBar::DolphinTabBar(QWidget *parent)
@@ -213,6 +236,19 @@ void DolphinTabBar::updateAutoActivationTimer(const int index)
 }
 
 #include "moc_dolphintabbar.cpp"
+
+void DolphinTabBar::tabInserted(int index)
+{
+    QTabBar::tabInserted(index);
+    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+        return;
+    }
+    if (QWidget *button = tabButton(index, QTabBar::RightSide)) {
+        static auto *lift = new BooneLiftCloseButton(qApp);
+        button->installEventFilter(lift);
+        button->move(button->pos()); // no-op unless already placed; the next placement lifts it
+    }
+}
 
 // BOONE: the tab strip's base line (the tabs' outline colour) runs under every tab but the
 // current one, which stays open into the folder below. DolphinTabWidget continues it

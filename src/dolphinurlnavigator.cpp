@@ -16,12 +16,14 @@
 #include <KUrlComboBox>
 
 #include <QAbstractButton>
+#include <QAction>
 #include <QApplication>
 #include <QFontInfo>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QToolButton>
 
 namespace
 {
@@ -39,6 +41,20 @@ protected:
             regular.setBold(false);
             regular.setStyleName(QFontInfo(regular).styleName());
             button->setFont(regular);
+        } else if (event->type() == QEvent::Polish && watched->inherits("QToolButton") && watched->parent()
+                   && watched->parent()->objectName() == QLatin1String("mainToolBar")) {
+            // Vista's refresh button is a segment at the end of the address bar: name it for the
+            // style sheet, and let it fill the row like the address bar does
+            auto *button = static_cast<QToolButton *>(watched);
+            if (button->defaultAction() && button->defaultAction()->objectName() == QLatin1String("view_redisplay")) {
+                button->setObjectName(QStringLiteral("booneRefresh"));
+                button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+                // joined to the address bar: no gaps between the row's items (the style
+                // sheet spaces the search box)
+                if (QLayout *row = button->parentWidget()->layout()) {
+                    row->setSpacing(0);
+                }
+            }
         }
         return false;
     }

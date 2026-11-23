@@ -32,6 +32,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseDoubleClickEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
+    void tabInserted(int index) override;
 
     /**
      * Opens a context menu for the tab on the \a event position.

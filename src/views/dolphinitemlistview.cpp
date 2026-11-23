@@ -22,6 +22,9 @@ DolphinItemListView::DolphinItemListView(QGraphicsWidget *parent)
     : KFileItemListView(parent)
     , m_zoomLevel(0)
 {
+    if (qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+        setAlternateBackgrounds(false); // BOONE: Vista's Details view has no striped rows
+    }
     DolphinItemListView::updateFont();
     updateGridSize();
 }
@@ -175,7 +178,9 @@ void DolphinItemListView::updateGridSize()
     m_zoomLevel = ZoomLevelInfo::zoomLevelForIconSize(QSize(iconSize, iconSize));
     KItemListStyleOption option = styleOption();
 
-    const int padding = 2;
+    // BOONE: Vista keeps about 4 px between an icon view item's selection and its icon/label
+    static const bool boone = qEnvironmentVariableIsSet("DENAIRU_SESSION");
+    const int padding = boone && itemLayout() == KFileItemListView::IconsLayout ? 4 : 2;
     int horizontalMargin = 0;
     int verticalMargin = 0;
 

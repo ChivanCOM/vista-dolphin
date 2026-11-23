@@ -54,6 +54,8 @@ QWidget *SearchBoxAction::createWidget(QWidget *parent)
     field->setToolTip(i18nc("@info:tooltip", "Search the folder you are in"));
     // Vista's box is about a quarter of the address bar: room for a few words
     field->setFixedWidth(22 * field->fontMetrics().averageCharWidth());
+    // the address bar's height: both fill the toolbar row
+    field->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     QAction *go = field->addAction(QIcon::fromTheme(QStringLiteral("edit-find")), QLineEdit::TrailingPosition);
     go->setToolTip(i18nc("@info:tooltip", "Search"));
     connect(go, &QAction::triggered, this, &SearchBoxAction::searchCommitted);

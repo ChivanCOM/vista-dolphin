@@ -15,6 +15,7 @@
 #include <KSharedConfig>
 
 #include <QApplication>
+#include <QLinearGradient>
 #include <QPainter>
 #include <QPropertyAnimation>
 #include <QStyleOption>
@@ -619,8 +620,53 @@ void KItemListWidget::setPressed(bool enabled)
     }
 }
 
+// BOONE: Windows Vista's Explorer item states (also Windows 7's): pale blue gradients with a
+// 1 px border, 2 px corners and a faint white inner edge, instead of an accent-coloured wash
+static void booneDrawItemState(QPainter *painter, const QRectF &area, const QColor &border, const QColor &top, const QColor &bottom, qreal innerAlpha)
+{
+    const QRectF outer = QRectF(area.toRect()).adjusted(0.5, 0.5, -0.5, -0.5);
+    painter->save();
+    painter->setRenderHint(QPainter::Antialiasing);
+    QPainterPath path;
+    path.addRoundedRect(outer, 2, 2);
+    if (top.isValid()) {
+        QLinearGradient fill(outer.topLeft(), outer.bottomLeft());
+        fill.setColorAt(0, top);
+        fill.setColorAt(1, bottom);
+        painter->fillPath(path, fill);
+    }
+    if (innerAlpha > 0 && outer.width() > 4 && outer.height() > 4) {
+        QPainterPath inner;
+        inner.addRoundedRect(outer.adjusted(1, 1, -1, -1), 1.5, 1.5);
+        painter->strokePath(inner, QPen(QColor(255, 255, 255, qRound(255 * innerAlpha)), 1));
+    }
+    painter->strokePath(path, QPen(border, 1));
+    painter->restore();
+}
+
 void KItemListWidget::drawItemStyleOption(QPainter *painter, QWidget *widget, QStyle::State styleState)
 {
+    static const bool boone = qEnvironmentVariableIsSet("DENAIRU_SESSION");
+    if (boone) {
+        const QRectF area = selectionRectFull();
+        const bool active = styleState & QStyle::State_Active;
+        const bool hoverLayer = styleState & QStyle::State_MouseOver;
+        if (m_clickHighlighted || (m_selected && hoverLayer)) {
+            // hot and selected
+            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xd4, 0xe6, 0xfc), QColor(0xb6, 0xd4, 0xfa), 0.5);
+        } else if (hoverLayer) {
+            booneDrawItemState(painter, area, QColor(0xb8, 0xd6, 0xfb), QColor(0xfa, 0xfb, 0xfd), QColor(0xeb, 0xf3, 0xfd), 0.6);
+        } else if (m_selected && active) {
+            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xdc, 0xeb, 0xfc), QColor(0xc1, 0xdb, 0xfc), 0.5);
+        } else if (m_selected) {
+            // selected in a window or view without focus: Vista's grey
+            booneDrawItemState(painter, area, QColor(0xd9, 0xd9, 0xd9), QColor(0xf8, 0xf8, 0xf8), QColor(0xe5, 0xe5, 0xe5), 0.5);
+        } else if (m_current && active) {
+            // the keyboard's item, not selected: its outline only
+            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce, 190), QColor(), QColor(), 0);
+        }
+        return;
+    }
     QStyleOptionViewItem viewItemOption;
     constexpr int roundness = 5; // From Breeze style.
     constexpr qreal penWidth = 1.25;
