@@ -5,6 +5,8 @@
  */
 
 #include "dolphinplacesmodelsingleton.h"
+
+#include <KLocalizedString>
 #include "trash/dolphintrash.h"
 #include "views/draganddrophelper.h"
 
@@ -86,6 +88,9 @@ QVariant DolphinPlacesModel::data(const QModelIndex &index, int role) const
             if (groupType == KFilePlacesModel::PlacesType) {
                 return QString();
             }
+        } else if (KFilePlacesModel::groupType(index) == KFilePlacesModel::PlacesType) {
+            // BOONE: Vista's navigation pane calls these "Favorite Links"
+            return i18nc("@item places group, Windows Vista wording", "Favorite Links");
         }
         break;
     }
