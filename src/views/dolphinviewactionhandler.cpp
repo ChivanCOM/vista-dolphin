@@ -7,6 +7,8 @@
 
 #include "dolphinviewactionhandler.h"
 
+#include <KLazyLocalizedString>
+
 #include "kitemviews/kfileitemlisttostring.h"
 #include "kitemviews/kfileitemmodel.h"
 #include "selectionmode/actiontexthelper.h"
@@ -363,12 +365,44 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     viewSettings->setText(i18nc("@action:intoolbar", "View Settings"));
     viewSettings->setWhatsThis(
         xi18nc("@info:whatsthis View Settings Toolbutton", "This cycles through all view modes. The dropdown menu contains various view-related actions."));
-    const auto actions = viewModeActions->actions();
-    for (QAction *action : actions) {
-        viewSettings->addAction(action);
+    // BOONE: Windows Vista's Views list - icon sizes, List, Details and Tiles - instead of
+    // Dolphin's three modes plus a zoom slider. Each entry is a view mode at an icon size
+    // (zoom 0 = 16 px, 3 = 48 px, 6 = 96 px, 16 = 256 px).
+    auto booneGroup = new QActionGroup(this);
+    booneGroup->setExclusive(true);
+    const struct {
+        KLazyLocalizedString text;
+        const char *icon;
+        DolphinView::Mode mode;
+        int zoom;
+    } booneViews[] = {
+        {kli18nc("@action:inmenu Vista Views", "Extra Large Icons"), "view-list-icons", DolphinView::IconsView, 16},
+        {kli18nc("@action:inmenu Vista Views", "Large Icons"), "view-list-icons", DolphinView::IconsView, 6},
+        {kli18nc("@action:inmenu Vista Views", "Medium Icons"), "view-list-icons", DolphinView::IconsView, 3},
+        {kli18nc("@action:inmenu Vista Views", "Small Icons"), "view-list-icons", DolphinView::IconsView, 0},
+        {kli18nc("@action:inmenu Vista Views", "List"), "view-list-text", DolphinView::CompactView, 0},
+        {kli18nc("@action:inmenu Vista Views", "Details"), "view-list-details", DolphinView::DetailsView, 0},
+        {kli18nc("@action:inmenu Vista Views", "Tiles"), "view-list-tree", DolphinView::CompactView, 3},
+    };
+    for (const auto &v : booneViews) {
+        QAction *a = viewSettings->menu()->addAction(QIcon::fromTheme(QLatin1String(v.icon)), v.text.toString());
+        a->setCheckable(true);
+        booneGroup->addAction(a);
+        const DolphinView::Mode mode = v.mode;
+        const int zoom = v.zoom;
+        connect(a, &QAction::triggered, this, [this, mode, zoom]() {
+            if (!m_currentView) {
+                return;
+            }
+            m_currentView->setViewMode(mode);
+            if (mode != DolphinView::DetailsView) {
+                m_currentView->setZoomLevel(zoom);
+            }
+            updateBooneViews();
+        });
+        m_booneViews.append({a, int(v.mode), v.zoom});
     }
     viewSettings->addSeparator();
-    viewSettings->addAction(zoomWidgetAction);
     viewSettings->addAction(sortByActionMenu);
     viewSettings->addAction(visibleRolesMenu);
     viewSettings->addAction(showPreview);
@@ -550,6 +584,7 @@ void DolphinViewActionHandler::updateViewActions()
 
     QAction *showPreviewAction = m_actionCollection->action(QStringLiteral("show_preview"));
     showPreviewAction->setChecked(m_currentView->previewsShown());
+    updateBooneViews();
 
     slotSortOrderChanged(m_currentView->sortOrder());
     slotSortFoldersFirstChanged(m_currentView->sortFoldersFirst());
@@ -750,9 +785,22 @@ void DolphinViewActionHandler::slotSortRoleChanged(const QByteArray &role)
     slotSortOrderChanged(m_currentView->sortOrder());
 }
 
+void DolphinViewActionHandler::updateBooneViews()
+{
+    if (!m_currentView) {
+        return;
+    }
+    const int mode = m_currentView->viewMode();
+    const int zoom = m_currentView->zoomLevel();
+    for (const BooneView &v : std::as_const(m_booneViews)) {
+        v.action->setChecked(v.mode == mode && (mode == DolphinView::DetailsView || v.zoom == zoom));
+    }
+}
+
 void DolphinViewActionHandler::slotZoomLevelChanged(int current, int previous)
 {
     Q_UNUSED(previous)
+    updateBooneViews();
 
     QAction *zoomInAction = m_actionCollection->action(KStandardAction::name(KStandardAction::ZoomIn));
     if (zoomInAction) {

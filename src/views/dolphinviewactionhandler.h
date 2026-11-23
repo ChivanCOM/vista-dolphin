@@ -282,6 +282,15 @@ private:
 
     QHash<QByteArray, KToggleAction *> m_sortByActions;
     QHash<QByteArray, KToggleAction *> m_visibleRoles;
+
+    /** BOONE: Vista's Views menu - (action, view mode, zoom level) for each entry. */
+    struct BooneView {
+        QAction *action;
+        int mode;
+        int zoom;
+    };
+    QList<BooneView> m_booneViews;
+    void updateBooneViews();
 };
 
 #endif /* DOLPHINVIEWACTIONHANDLER_H */
