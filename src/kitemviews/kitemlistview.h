@@ -289,6 +289,14 @@ public:
     bool isHeaderVisible() const;
 
     /**
+     * BOONE: shows a header with the columns \p roles above a layout that has no columns
+     * (icons, compact), like Windows Vista's Explorer. It only sorts: clicking a column sorts
+     * by it; the columns never resize or reorder the items. An empty list removes it.
+     * Use setHeaderVisible() for the real header of the details layout instead.
+     */
+    void setDecorativeHeader(const QList<QByteArray> &roles);
+
+    /**
      * @return Header of the list. The header is also available if it is not shown
      *         (see KItemListView::setHeaderShown()).
      */
@@ -784,6 +792,8 @@ private:
 
     KItemListHeader *m_header;
     KItemListHeaderWidget *m_headerWidget;
+    bool m_decorativeHeader = false; // BOONE: see setDecorativeHeader()
+    QPointF m_detailsSidePadding; // the details header's side padding, kept while a decorative header shows
 
     QPropertyAnimation *m_indicatorAnimation;
 

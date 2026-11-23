@@ -6,9 +6,9 @@
 
 #include "dolphinplacesmodelsingleton.h"
 
-#include <KLocalizedString>
 #include "trash/dolphintrash.h"
 #include "views/draganddrophelper.h"
+#include <KLocalizedString>
 
 #include <KAboutData>
 

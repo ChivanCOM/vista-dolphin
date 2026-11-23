@@ -126,8 +126,7 @@ protected:
         QPen pen(QColor(0x3b, 0x5a, 0x82), 1.5);
         painter.setRenderHint(QPainter::Antialiasing);
         painter.setPen(pen);
-        painter.drawPolyline(QPolygonF{QPointF(c.x() - h, c.y() - dir * h / 2), QPointF(c.x(), c.y() + dir * h / 2),
-                                       QPointF(c.x() + h, c.y() - dir * h / 2)});
+        painter.drawPolyline(QPolygonF{QPointF(c.x() - h, c.y() - dir * h / 2), QPointF(c.x(), c.y() + dir * h / 2), QPointF(c.x() + h, c.y() - dir * h / 2)});
     }
 
     void mouseReleaseEvent(QMouseEvent *event) override

@@ -379,6 +379,9 @@ void KItemListView::setGeometry(const QRectF &rect)
     }
 
     const QSizeF newSize = rect.size();
+    if (m_decorativeHeader) {
+        m_headerWidget->resize(rect.width(), m_headerWidget->size().height());
+    }
     if (m_itemSize.isEmpty()) {
         m_headerWidget->resize(rect.width(), m_headerWidget->size().height());
         if (m_headerWidget->automaticColumnResizing()) {
@@ -689,6 +692,9 @@ bool KItemListView::isTransactionActive() const
 
 void KItemListView::setHeaderVisible(bool visible)
 {
+    if (m_decorativeHeader) {
+        setDecorativeHeader({});
+    }
     if (visible && !m_headerWidget->isVisible()) {
         QStyleOptionHeader option;
         const QSize headerSize = style()->sizeFromContents(QStyle::CT_HeaderSection, &option, QSize());
@@ -723,9 +729,61 @@ void KItemListView::setHeaderVisible(bool visible)
     }
 }
 
+void KItemListView::setDecorativeHeader(const QList<QByteArray> &roles)
+{
+    if (roles.isEmpty()) {
+        if (m_decorativeHeader) {
+            disconnect(m_headerWidget, &KItemListHeaderWidget::sortOrderChanged, this, &KItemListView::sortOrderChanged);
+            disconnect(m_headerWidget, &KItemListHeaderWidget::sortRoleChanged, this, &KItemListView::sortRoleChanged);
+            m_decorativeHeader = false;
+            m_layouter->setHeaderHeight(0);
+            m_headerWidget->setVisible(false);
+            // give the details header its own side padding back, without anyone saving a change
+            m_headerWidget->blockSignals(true);
+            m_headerWidget->setSidePadding(m_detailsSidePadding.x(), m_detailsSidePadding.y());
+            m_headerWidget->blockSignals(false);
+        }
+        return;
+    }
+    if (m_headerWidget->isVisible() && !m_decorativeHeader) {
+        setHeaderVisible(false);
+    }
+
+    QStyleOptionHeader option;
+    const QSize headerSize = style()->sizeFromContents(QStyle::CT_HeaderSection, &option, QSize());
+    m_headerWidget->setPos(0, 0);
+    m_headerWidget->resize(size().width(), headerSize.height());
+    m_headerWidget->setModel(m_model);
+    if (!m_decorativeHeader) {
+        m_detailsSidePadding = QPointF(m_headerWidget->leftPadding(), m_headerWidget->rightPadding());
+    }
+    m_headerWidget->blockSignals(true); // these are not the details view's settings: nothing to save
+    m_headerWidget->setSidePadding(0, 0); // Vista: the first column starts at the view's edge
+    m_headerWidget->setColumns(roles);
+    m_headerWidget->setAutomaticColumnResizing(false);
+    // Vista's widths: room for the title and its sort arrow; Name a little wider
+    const QFontMetricsF fm(font());
+    for (const QByteArray &role : roles) {
+        const QString title = m_model ? m_model->roleDescription(role) : QString();
+        qreal width = fm.horizontalAdvance(title) + 3 * fm.height();
+        width = qMax(width, (role == "text" ? 18 : 11) * fm.averageCharWidth());
+        m_headerWidget->setColumnWidth(role, width);
+    }
+    m_headerWidget->blockSignals(false);
+    if (!m_decorativeHeader) {
+        connect(m_headerWidget, &KItemListHeaderWidget::sortOrderChanged, this, &KItemListView::sortOrderChanged);
+        connect(m_headerWidget, &KItemListHeaderWidget::sortRoleChanged, this, &KItemListView::sortRoleChanged);
+    }
+    m_decorativeHeader = true;
+    m_layouter->setHeaderHeight(headerSize.height());
+    m_headerWidget->setZValue(1);
+    m_headerWidget->setVisible(true);
+}
+
 bool KItemListView::isHeaderVisible() const
 {
-    return m_headerWidget->isVisible();
+    // BOONE: the details header only; a decorative header has its own fixed columns
+    return m_headerWidget->isVisible() && !m_decorativeHeader;
 }
 
 KItemListHeader *KItemListView::header() const
@@ -1824,6 +1882,10 @@ void KItemListView::setModel(KItemModelBase *model)
         if (itemCount > 0) {
             slotItemsInserted(KItemRangeList() << KItemRange(0, itemCount));
         }
+    }
+
+    if (m_decorativeHeader) {
+        setDecorativeHeader(m_headerWidget->columns()); // titles and widths come from the model
     }
 
     onModelChanged(model, previous);

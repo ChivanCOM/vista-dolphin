@@ -123,7 +123,14 @@ bool DolphinItemListView::itemLayoutSupportsItemExpanding(ItemLayout layout) con
 
 void DolphinItemListView::onItemLayoutChanged(ItemLayout current, ItemLayout previous)
 {
-    setHeaderVisible(current == DetailsLayout);
+    // BOONE: like Windows Vista, every view has column headers; outside the details view
+    // they are only for sorting.
+    if (current == DetailsLayout) {
+        setHeaderVisible(true);
+    } else {
+        setHeaderVisible(false);
+        setDecorativeHeader({"text", "modificationtime", "type", "size"});
+    }
 
     updateFont();
     updateGridSize();
