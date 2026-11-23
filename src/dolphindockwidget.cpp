@@ -109,14 +109,16 @@ protected:
             hover.setColorAt(1, QColor(0xe1, 0xee, 0xf9));
             painter.fillRect(r, hover);
         }
-        // Vista's thin divider above the header
-        painter.setPen(QColor(0xd5, 0xdf, 0xe5));
+        // Vista's thin divider above the header (measured #f1f1f1, two pixels)
+        painter.setPen(QColor(0xe6, 0xe6, 0xe6));
+        painter.drawLine(r.left(), r.top() + 1, r.right(), r.top() + 1);
+        painter.setPen(QColor(0xf1, 0xf1, 0xf1));
         painter.drawLine(r.left(), r.top(), r.right(), r.top());
 
         const int margin = style()->pixelMetric(QStyle::PM_LayoutLeftMargin);
         const int arrow = 7;
         QRect textRect = r.adjusted(margin, 1, -(margin + arrow + margin), 0);
-        painter.setPen(QColor(0x23, 0x4d, 0x86));
+        painter.setPen(QColor(0x1e, 0x39, 0x5b)); // Vista's navy for pane headers
         painter.drawText(textRect, Qt::AlignVCenter | Qt::AlignLeft, KLocalizedString::removeAcceleratorMarker(m_dock->windowTitle()));
 
         // chevron: down when the tree is shown (click folds it away), up when folded

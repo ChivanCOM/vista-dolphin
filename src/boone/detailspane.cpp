@@ -27,9 +27,13 @@ namespace
 {
 constexpr int IconSize = 48;
 const QColor KeyColor(0x5a, 0x67, 0x79); // Vista's grey for the labels
-const QColor TopLine(0xb9, 0xcb, 0xdd);
-const QColor Top(0xfc, 0xfd, 0xfe);
-const QColor Bottom(0xe2, 0xec, 0xf6);
+// measured from Vista Explorer: 70 px tall, a grey-blue top line, light shading under it,
+// and a left-to-right wash from near white to light blue
+const QColor TopLine(0xa7, 0xb1, 0xba);
+constexpr int PaneHeight = 70;
+constexpr int IconLeft = 18;   // icon's left edge
+constexpr int TextGap = 23;    // icon to text (text starts at 89 px)
+constexpr int TextTop = 9;     // first text line from the top line
 }
 
 DetailsPane::DetailsPane(QWidget *parent)
@@ -43,13 +47,13 @@ DetailsPane::DetailsPane(QWidget *parent)
 
     auto row = new QHBoxLayout(this);
     // a little more air than a dialog: the pane is a calm strip, not a form
-    row->setContentsMargins(2 * margin, margin, 2 * margin, margin);
-    row->setSpacing(2 * spacing);
+    row->setContentsMargins(IconLeft, TextTop, 2 * margin, margin);
+    row->setSpacing(TextGap);
 
     m_icon = new QLabel(this);
     m_icon->setFixedSize(IconSize, IconSize);
     m_icon->setAlignment(Qt::AlignCenter);
-    row->addWidget(m_icon, 0, Qt::AlignVCenter);
+    row->addWidget(m_icon, 0, Qt::AlignTop);
 
     // name + summary on the left, then the key/value grid; all on one text baseline grid
     auto text = new QGridLayout();
@@ -81,11 +85,11 @@ DetailsPane::DetailsPane(QWidget *parent)
     text->setColumnStretch(2, 1);
     // the text block sits level with the icon: centred on it as a whole, lines kept together
     row->addLayout(text, 1);
-    row->setAlignment(text, Qt::AlignVCenter);
+    row->setAlignment(text, Qt::AlignTop); // Vista starts the text at the top, beside the icon
 
     // three lines of text, like Vista's pane; never shorter than the icon
     const int lines = 3 * fontMetrics().height() + 2;
-    setFixedHeight(qMax(IconSize, lines) + 2 * margin + 1);
+    setFixedHeight(qMax(PaneHeight, lines + TextTop + margin + 1));
 }
 
 void DetailsPane::setView(DolphinView *view)
@@ -238,10 +242,18 @@ void DetailsPane::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     const QRectF r = rect();
-    QLinearGradient fill(r.topLeft(), r.bottomLeft());
-    fill.setColorAt(0, Top);
-    fill.setColorAt(1, Bottom);
+    QLinearGradient fill(r.topLeft(), r.topRight());
+    fill.setColorAt(0.00, QColor(0xf6, 0xfa, 0xf9));
+    fill.setColorAt(0.37, QColor(0xed, 0xfa, 0xff));
+    fill.setColorAt(0.55, QColor(0xe8, 0xf7, 0xfc));
+    fill.setColorAt(0.72, QColor(0xd5, 0xeb, 0xf8));
+    fill.setColorAt(0.90, QColor(0xc7, 0xdd, 0xf2));
+    fill.setColorAt(1.00, QColor(0xc0, 0xdb, 0xf0));
     painter.fillRect(r, fill);
+    QLinearGradient shade(r.topLeft(), r.topLeft() + QPointF(0, 8));
+    shade.setColorAt(0, QColor(0x9f, 0xbc, 0xd2, 120));
+    shade.setColorAt(1, QColor(0x9f, 0xbc, 0xd2, 0));
+    painter.fillRect(QRectF(r.left(), r.top(), r.width(), 8), shade);
     painter.setPen(TopLine);
     painter.drawLine(r.topLeft(), r.topRight());
 

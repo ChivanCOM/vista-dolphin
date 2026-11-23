@@ -31,7 +31,9 @@ void DolphinUrlNavigatorsController::slotPlacesPanelVisibilityChanged(bool visib
 {
     // The places-selector from the URL navigator should only be shown
     // if the places dock is invisible
-    s_placesSelectorVisible = !visible;
+    // BOONE: like Vista's address bar, always lead with the location's icon
+    Q_UNUSED(visible)
+    s_placesSelectorVisible = true;
 
     for (DolphinUrlNavigator *urlNavigator : s_instances) {
         urlNavigator->setPlacesSelectorVisible(s_placesSelectorVisible);

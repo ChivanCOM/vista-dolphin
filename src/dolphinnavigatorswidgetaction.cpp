@@ -72,6 +72,9 @@ void DolphinNavigatorsWidgetAction::adjustSpacing()
             leadingSpacing = 0;
         }
     }
+    // BOONE: Vista's breadcrumb starts at the left of the address field, not above the view
+    leadingSpacing = 0;
+    trailingSpacing = 0;
     spacing(Primary, Leading)->setMinimumWidth(leadingSpacing);
     spacing(Primary, Trailing)->setFixedWidth(trailingSpacing);
 

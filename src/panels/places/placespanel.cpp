@@ -11,6 +11,8 @@
 
 #include "placespanel.h"
 
+#include <QPalette>
+
 #include "dolphin_generalsettings.h"
 #include "dolphin_placespanelsettings.h"
 #include "dolphinplacesmodelsingleton.h"
@@ -37,6 +39,15 @@ PlacesPanel::PlacesPanel(QWidget *parent)
     connect(this, &PlacesPanel::urlsDropped, this, &PlacesPanel::slotUrlsDropped);
 
     setAutoResizeItemsEnabled(false);
+
+    // BOONE: Vista's navigation pane - the places in link blue, the "Favorite Links"
+    // heading in grey (KIO draws headings as a 60/40 mix of WindowText and Window)
+    QPalette vista = palette();
+    for (const auto group : {QPalette::Active, QPalette::Inactive}) {
+        vista.setColor(group, QPalette::Text, QColor(0x1d, 0x5f, 0xa5));
+        vista.setColor(group, QPalette::WindowText, QColor(0x14, 0x14, 0x14));
+    }
+    setPalette(vista);
 
     setTeardownFunction([this](const QModelIndex &index) {
         slotTearDownRequested(index);

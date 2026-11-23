@@ -71,6 +71,14 @@ QWidget *SearchBoxAction::createWidget(QWidget *parent)
         }
     });
     connect(field, &QLineEdit::returnPressed, this, &SearchBoxAction::searchCommitted);
+    // Vista's grey italic "Search"; what you type is upright
+    auto italicWhenEmpty = [field](const QString &text) {
+        QFont font = field->font();
+        font.setItalic(text.isEmpty());
+        field->setFont(font);
+    };
+    connect(field, &QLineEdit::textChanged, field, italicWhenEmpty);
+    italicWhenEmpty(QString());
     field->installEventFilter(new EscapeClears(field));
     m_field = field;
     return field;
