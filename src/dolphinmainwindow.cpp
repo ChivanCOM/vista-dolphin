@@ -7,6 +7,9 @@
  */
 
 #include "dolphinmainwindow.h"
+#include <QProcess>
+#include <QDockWidget>
+#include "boone/detailspane.h"
 
 #include "admin/workerintegration.h"
 #include "dolphin_generalsettings.h"
@@ -1623,7 +1626,25 @@ void DolphinMainWindow::updateHamburgerMenu()
             menu->addAction(ac->action(QStringLiteral("zoom")));
         }
     }
-    menu->addAction(ac->action(QStringLiteral("panels")));
+    // BOONE: Vista's Organize > Layout (Menu Bar, Details Pane, Preview Pane, Navigation Pane)
+    auto layoutMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18nc("@action:inmenu Vista Organize menu", "Layout"));
+    layoutMenu->addAction(ac->action(KStandardAction::name(KStandardAction::ShowMenubar)));
+    layoutMenu->addAction(ac->action(QStringLiteral("show_details_pane")));
+#if HAVE_BALOO
+    layoutMenu->addAction(ac->action(QStringLiteral("show_information_panel")));
+#endif
+    layoutMenu->addAction(ac->action(QStringLiteral("show_places_panel")));
+    layoutMenu->addAction(ac->action(QStringLiteral("show_folders_panel")));
+    layoutMenu->addAction(ac->action(QStringLiteral("show_terminal_panel")));
+    hamburgerMenu->hideActionsOf(layoutMenu);
+    // "Folder and Search Options" opens the Control Panel's Folder Options when it is there
+    if (!QStandardPaths::findExecutable(QStringLiteral("denairu-control-panel")).isEmpty()) {
+        auto folderOptions = menu->addAction(QIcon::fromTheme(QStringLiteral("folder")), i18nc("@action:inmenu Vista Organize menu", "Folder and Search Options"));
+        connect(folderOptions, &QAction::triggered, this, []() {
+            QProcess::startDetached(QStringLiteral("denairu-control-panel"), {QStringLiteral("--applet"), QStringLiteral("folderoptions")});
+        });
+    }
+    menu->addSeparator();
 
     // The "Configure" menu is not added to the actionCollection() because there is hardly
     // a good reason for users to put it on their toolbar.
@@ -1667,6 +1688,9 @@ void DolphinMainWindow::activeViewChanged(DolphinViewContainer *viewContainer)
     Q_ASSERT(viewContainer);
 
     m_activeViewContainer = viewContainer;
+    if (m_detailsPane) {
+        m_detailsPane->setView(viewContainer->view());
+    }
 
     if (oldViewContainer) {
         // Disconnect all signals between the old view container (container,
@@ -2554,6 +2578,25 @@ void DolphinMainWindow::setupDockWidgets()
     actionCollection()->setDefaultShortcut(focusPlacesPanel, Qt::CTRL | Qt::Key_P);
     connect(focusPlacesPanel, &QAction::triggered, this, &DolphinMainWindow::togglePlacesPanelFocus);
 
+    // BOONE: Windows Vista's Details Pane, a full-width strip along the bottom of the window
+    // (the bottom panel area owns both bottom corners, so it also runs under the places)
+    m_detailsPane = new Boone::DetailsPane();
+    auto detailsDock = new QDockWidget(i18nc("@title:window Vista", "Details Pane"), this);
+    detailsDock->setObjectName(QStringLiteral("booneDetailsDock"));
+    detailsDock->setTitleBarWidget(new QWidget(detailsDock));
+    detailsDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    detailsDock->setAllowedAreas(Qt::BottomDockWidgetArea);
+    detailsDock->setWidget(m_detailsPane);
+    setCorner(Qt::BottomLeftCorner, Qt::BottomDockWidgetArea);
+    setCorner(Qt::BottomRightCorner, Qt::BottomDockWidgetArea);
+    addDockWidget(Qt::BottomDockWidgetArea, detailsDock);
+    QAction *detailsAction = detailsDock->toggleViewAction();
+    detailsAction->setText(i18nc("@action:inmenu Vista layout", "Details Pane"));
+    actionCollection()->addAction(QStringLiteral("show_details_pane"), detailsAction);
+    if (m_activeViewContainer) {
+        m_detailsPane->setView(m_activeViewContainer->view());
+    }
+
     // Add actions into the "Panels" menu
     KActionMenu *panelsMenu = new KActionMenu(i18nc("@action:inmenu View", "Show Panels"), this);
     actionCollection()->addAction(QStringLiteral("panels"), panelsMenu);
@@ -2566,6 +2609,7 @@ void DolphinMainWindow::setupDockWidgets()
 #endif
     panelsMenu->addAction(ac->action(QStringLiteral("show_folders_panel")));
     panelsMenu->addAction(ac->action(QStringLiteral("show_terminal_panel")));
+    panelsMenu->addAction(detailsAction);
     panelsMenu->addSeparator();
     panelsMenu->addAction(lockLayoutAction);
     panelsMenu->addSeparator();

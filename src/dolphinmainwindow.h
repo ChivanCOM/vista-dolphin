@@ -36,6 +36,10 @@ typedef KIO::FileUndoManager::CommandType CommandType;
 class DiskSpaceUsageMenu;
 class DolphinBookmarkHandler;
 class DolphinViewActionHandler;
+namespace Boone
+{
+class DetailsPane;
+}
 class DolphinSettingsDialog;
 class DolphinViewContainer;
 class DolphinRemoteEncoding;
@@ -806,6 +810,8 @@ private:
     KIO::CommandLauncherJob *m_job;
 
     KRecentFilesAction *m_recentFiles = nullptr;
+
+    Boone::DetailsPane *m_detailsPane = nullptr; // BOONE: Vista's Details Pane
 
     friend class DolphinMainWindowTest;
 };
