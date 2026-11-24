@@ -365,17 +365,17 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     viewSettings->setText(i18nc("@action:intoolbar", "View Settings"));
     viewSettings->setWhatsThis(
         xi18nc("@info:whatsthis View Settings Toolbutton", "This cycles through all view modes. The dropdown menu contains various view-related actions."));
-    // BOONE: Windows Vista's Views list - icon sizes, List, Details and Tiles - instead of
+    // Vista: Windows Vista's Views list - icon sizes, List, Details and Tiles - instead of
     // Dolphin's three modes plus a zoom slider. Each entry is a view mode at an icon size
     // (zoom 0 = 16 px, 3 = 48 px, 6 = 96 px, 16 = 256 px).
-    auto booneGroup = new QActionGroup(this);
-    booneGroup->setExclusive(true);
+    auto vistaGroup = new QActionGroup(this);
+    vistaGroup->setExclusive(true);
     const struct {
         KLazyLocalizedString text;
         const char *icon;
         DolphinView::Mode mode;
         int zoom;
-    } booneViews[] = {
+    } vistaViews[] = {
         {kli18nc("@action:inmenu Vista Views", "Extra Large Icons"), "view-list-icons", DolphinView::IconsView, 16},
         {kli18nc("@action:inmenu Vista Views", "Large Icons"), "view-list-icons", DolphinView::IconsView, 6},
         {kli18nc("@action:inmenu Vista Views", "Medium Icons"), "view-list-icons", DolphinView::IconsView, 3},
@@ -384,10 +384,10 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
         {kli18nc("@action:inmenu Vista Views", "Details"), "view-list-details", DolphinView::DetailsView, 0},
         {kli18nc("@action:inmenu Vista Views", "Tiles"), "view-list-tree", DolphinView::CompactView, 3},
     };
-    for (const auto &v : booneViews) {
+    for (const auto &v : vistaViews) {
         QAction *a = viewSettings->menu()->addAction(QIcon::fromTheme(QLatin1String(v.icon)), v.text.toString());
         a->setCheckable(true);
-        booneGroup->addAction(a);
+        vistaGroup->addAction(a);
         const DolphinView::Mode mode = v.mode;
         const int zoom = v.zoom;
         connect(a, &QAction::triggered, this, [this, mode, zoom]() {
@@ -398,9 +398,9 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
             if (mode != DolphinView::DetailsView) {
                 m_currentView->setZoomLevel(zoom);
             }
-            updateBooneViews();
+            updateVistaViews();
         });
-        m_booneViews.append({a, int(v.mode), v.zoom});
+        m_vistaViews.append({a, int(v.mode), v.zoom});
     }
     viewSettings->addSeparator();
     viewSettings->addAction(sortByActionMenu);
@@ -410,18 +410,18 @@ void DolphinViewActionHandler::createActions(SelectionMode::ActionTextHelper *ac
     viewSettings->addAction(showHiddenFiles);
     viewSettings->addAction(adjustViewProps);
     viewSettings->setPopupMode(QToolButton::ToolButtonPopupMode::MenuButtonPopup);
-    // BOONE: as in Vista, clicking Views itself steps through List, Details, Tiles and Large
+    // Vista: as in Vista, clicking Views itself steps through List, Details, Tiles and Large
     // Icons; the arrow opens the full list
     connect(viewSettings, &KActionMenu::triggered, this, [this]() {
         static const int cycle[] = {4, 5, 6, 1}; // List, Details, Tiles, Large Icons
         int next = 0;
         for (int i = 0; i < 4; ++i) {
-            if (m_booneViews.value(cycle[i]).action && m_booneViews.value(cycle[i]).action->isChecked()) {
+            if (m_vistaViews.value(cycle[i]).action && m_vistaViews.value(cycle[i]).action->isChecked()) {
                 next = (i + 1) % 4;
                 break;
             }
         }
-        if (QAction *a = m_booneViews.value(cycle[next]).action) {
+        if (QAction *a = m_vistaViews.value(cycle[next]).action) {
             a->trigger();
         }
     });
@@ -598,7 +598,7 @@ void DolphinViewActionHandler::updateViewActions()
 
     QAction *showPreviewAction = m_actionCollection->action(QStringLiteral("show_preview"));
     showPreviewAction->setChecked(m_currentView->previewsShown());
-    updateBooneViews();
+    updateVistaViews();
 
     slotSortOrderChanged(m_currentView->sortOrder());
     slotSortFoldersFirstChanged(m_currentView->sortFoldersFirst());
@@ -799,14 +799,14 @@ void DolphinViewActionHandler::slotSortRoleChanged(const QByteArray &role)
     slotSortOrderChanged(m_currentView->sortOrder());
 }
 
-void DolphinViewActionHandler::updateBooneViews()
+void DolphinViewActionHandler::updateVistaViews()
 {
     if (!m_currentView) {
         return;
     }
     const int mode = m_currentView->viewMode();
     const int zoom = m_currentView->zoomLevel();
-    for (const BooneView &v : std::as_const(m_booneViews)) {
+    for (const VistaView &v : std::as_const(m_vistaViews)) {
         v.action->setChecked(v.mode == mode && (mode == DolphinView::DetailsView || v.zoom == zoom));
     }
 }
@@ -814,7 +814,7 @@ void DolphinViewActionHandler::updateBooneViews()
 void DolphinViewActionHandler::slotZoomLevelChanged(int current, int previous)
 {
     Q_UNUSED(previous)
-    updateBooneViews();
+    updateVistaViews();
 
     QAction *zoomInAction = m_actionCollection->action(KStandardAction::name(KStandardAction::ZoomIn));
     if (zoomInAction) {

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "dolphinitemlistview.h"
 
 #include "dolphin_compactmodesettings.h"
@@ -22,8 +23,8 @@ DolphinItemListView::DolphinItemListView(QGraphicsWidget *parent)
     : KFileItemListView(parent)
     , m_zoomLevel(0)
 {
-    if (qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
-        setAlternateBackgrounds(false); // BOONE: Vista's Details view has no striped rows
+    if (Vista::enabled()) {
+        setAlternateBackgrounds(false); // Vista: Vista's Details view has no striped rows
     }
     DolphinItemListView::updateFont();
     updateGridSize();
@@ -126,7 +127,7 @@ bool DolphinItemListView::itemLayoutSupportsItemExpanding(ItemLayout layout) con
 
 void DolphinItemListView::onItemLayoutChanged(ItemLayout current, ItemLayout previous)
 {
-    // BOONE: like Windows Vista, every view has column headers; outside the details view
+    // Vista: like Windows Vista, every view has column headers; outside the details view
     // they are only for sorting.
     if (current == DetailsLayout) {
         setHeaderVisible(true);
@@ -178,9 +179,9 @@ void DolphinItemListView::updateGridSize()
     m_zoomLevel = ZoomLevelInfo::zoomLevelForIconSize(QSize(iconSize, iconSize));
     KItemListStyleOption option = styleOption();
 
-    // BOONE: Vista keeps about 4 px between an icon view item's selection and its icon/label
-    static const bool boone = qEnvironmentVariableIsSet("DENAIRU_SESSION");
-    const int padding = boone && itemLayout() == KFileItemListView::IconsLayout ? 4 : 2;
+    // Vista: Vista keeps about 4 px between an icon view item's selection and its icon/label
+    static const bool vista = Vista::enabled();
+    const int padding = vista && itemLayout() == KFileItemListView::IconsLayout ? 4 : 2;
     int horizontalMargin = 0;
     int verticalMargin = 0;
 

@@ -89,7 +89,7 @@ QVariant DolphinPlacesModel::data(const QModelIndex &index, int role) const
                 return QString();
             }
         } else if (KFilePlacesModel::groupType(index) == KFilePlacesModel::PlacesType) {
-            // BOONE: Vista's navigation pane calls these "Favorite Links"
+            // Vista: Vista's navigation pane calls these "Favorite Links"
             return i18nc("@item places group, Windows Vista wording", "Favorite Links");
         }
         break;

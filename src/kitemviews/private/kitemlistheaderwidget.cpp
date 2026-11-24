@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "kitemlistheaderwidget.h"
 #include "kitemviews/kitemmodelbase.h"
 
@@ -198,22 +199,22 @@ qreal KItemListHeaderWidget::minimumColumnWidth() const
     return fontMetrics.height() * 4;
 }
 
-// BOONE: Windows Vista's column header, measured from Vista Explorer: a white upper part over
+// Vista: Windows Vista's column header, measured from Vista Explorer: a white upper part over
 // a light grey gradient, a #d5d5d5 line along the bottom, thin grey separators; the sorted
 // column pale blue with #99d7fb edges and a small chevron at the top (pointing up when
 // ascending); hover and press in brighter blues.
-static bool booneHeader()
+static bool vistaHeader()
 {
-    static const bool on = qEnvironmentVariableIsSet("DENAIRU_SESSION");
+    static const bool on = Vista::enabled();
     return on;
 }
 
 namespace
 {
-enum BooneLook { BooneNormal, BooneSorted, BooneHover, BoonePressed };
+enum VistaLook { VistaNormal, VistaSorted, VistaHover, VistaPressed };
 }
 
-static void booneFillSection(QPainter *painter, const QRectF &rect, BooneLook look, bool separator)
+static void vistaFillSection(QPainter *painter, const QRectF &rect, VistaLook look, bool separator)
 {
     struct Colors {
         const char *top, *bottomA, *bottomB, *edge, *line;
@@ -251,7 +252,7 @@ static void booneFillSection(QPainter *painter, const QRectF &rect, BooneLook lo
     painter->restore();
 }
 
-static void booneSortChevron(QPainter *painter, const QRectF &rect, bool ascending)
+static void vistaSortChevron(QPainter *painter, const QRectF &rect, bool ascending)
 {
     const qreal cx = qRound(rect.center().x()) + 0.5;
     const qreal top = 1.5, bottom = 4.5;
@@ -283,8 +284,8 @@ void KItemListHeaderWidget::paint(QPainter *painter, const QStyleOptionGraphicsI
     // Draw roles
     painter->setFont(font());
     painter->setPen(palette().text().color());
-    if (booneHeader()) {
-        booneFillSection(painter, QRectF(0, 0, size().width(), size().height()), BooneNormal, false);
+    if (vistaHeader()) {
+        vistaFillSection(painter, QRectF(0, 0, size().width(), size().height()), VistaNormal, false);
     }
 
     qreal x = -m_offset + m_leftPadding + unusedSpace();
@@ -521,17 +522,17 @@ void KItemListHeaderWidget::slotSortOrderChanged(Qt::SortOrder current, Qt::Sort
 
 void KItemListHeaderWidget::paintRole(QPainter *painter, const QByteArray &role, const QRectF &rect, int orderIndex, QWidget *widget) const
 {
-    if (booneHeader()) {
+    if (vistaHeader()) {
         const bool sorted = m_model->sortRole() == role;
-        BooneLook look = sorted ? BooneSorted : BooneNormal;
+        VistaLook look = sorted ? VistaSorted : VistaNormal;
         if (m_pressedRoleIndex == orderIndex) {
-            look = BoonePressed;
+            look = VistaPressed;
         } else if (m_hoveredIndex == orderIndex) {
-            look = BooneHover;
+            look = VistaHover;
         }
-        booneFillSection(painter, rect, look, true);
+        vistaFillSection(painter, rect, look, true);
         if (sorted) {
-            booneSortChevron(painter, rect, m_model->sortOrder() == Qt::AscendingOrder);
+            vistaSortChevron(painter, rect, m_model->sortOrder() == Qt::AscendingOrder);
         }
         const QRectF textRect = rect.adjusted(7, 0, -5, -1);
         const QString text = QFontMetricsF(font()).elidedText(m_model->roleDescription(role), Qt::ElideRight, textRect.width());

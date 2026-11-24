@@ -5,6 +5,7 @@
     SPDX-License-Identifier: LGPL-2.1-only OR LGPL-3.0-only OR LicenseRef-KDE-Accepted-LGPL
 */
 
+#include "vista/vista.h"
 #include "dolphinurlnavigator.h"
 
 #include "dolphin_generalsettings.h"
@@ -27,7 +28,7 @@
 
 namespace
 {
-class BooneRegularCrumbs : public QObject
+class VistaRegularCrumbs : public QObject
 {
 public:
     using QObject::QObject;
@@ -47,7 +48,7 @@ protected:
             // style sheet, and let it fill the row like the address bar does
             auto *button = static_cast<QToolButton *>(watched);
             if (button->defaultAction() && button->defaultAction()->objectName() == QLatin1String("view_redisplay")) {
-                button->setObjectName(QStringLiteral("booneRefresh"));
+                button->setObjectName(QStringLiteral("vistaRefresh"));
                 button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
                 // joined to the address bar: no gaps between the row's items (the style
                 // sheet spaces the search box)
@@ -88,14 +89,14 @@ DolphinUrlNavigator::DolphinUrlNavigator(const QUrl &url, QWidget *parent)
                         "<link url='help:/dolphin/location-bar.html'>click here</link>. "
                         "This will open the dedicated page in the Handbook.</para>"));
 
-    // BOONE: Vista's breadcrumb is all one weight; KIO draws the current folder in bold.
+    // Vista: Vista's breadcrumb is all one weight; KIO draws the current folder in bold.
     // Each crumb button's font is pinned to its regular face, so "bold" picks that same face
     // (synthetic emboldening is switched off in main.cpp). KIO makes crumbs as folders are
     // entered and they don't inherit a style name, so it is done as each one is polished.
-    if (qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+    if (Vista::enabled()) {
         static QObject *regularCrumbs = nullptr;
         if (!regularCrumbs) {
-            regularCrumbs = new BooneRegularCrumbs(qApp);
+            regularCrumbs = new VistaRegularCrumbs(qApp);
             qApp->installEventFilter(regularCrumbs);
         }
     }

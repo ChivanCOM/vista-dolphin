@@ -1,5 +1,5 @@
 /*
- * BOONE: Windows Vista's search box for Dolphin's address-bar row.
+ * Vista: Windows Vista's search box for Dolphin's address-bar row.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -13,7 +13,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 
-using namespace Boone;
+using namespace Vista;
 
 namespace
 {
@@ -48,7 +48,7 @@ SearchBoxAction::SearchBoxAction(QObject *parent)
 QWidget *SearchBoxAction::createWidget(QWidget *parent)
 {
     auto field = new QLineEdit(parent);
-    field->setObjectName(QStringLiteral("booneSearchBox"));
+    field->setObjectName(QStringLiteral("vistaSearchBox"));
     field->setPlaceholderText(i18nc("@info:placeholder Vista search box", "Search"));
     field->setClearButtonEnabled(true);
     field->setToolTip(i18nc("@info:tooltip", "Search the folder you are in"));

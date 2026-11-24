@@ -1,11 +1,11 @@
 /*
- * BOONE: Windows Vista's command bar tasks - buttons after Organize and Views that follow
+ * Vista: Windows Vista's command bar tasks - buttons after Organize and Views that follow
  * what is selected (Preview, Slide Show, Play, E-mail, Extract All Files...).
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef BOONE_COMMANDTASKS_H
-#define BOONE_COMMANDTASKS_H
+#ifndef VISTA_COMMANDTASKS_H
+#define VISTA_COMMANDTASKS_H
 
 #include <KFileItem>
 
@@ -21,7 +21,7 @@ class KToolBar;
 class QAction;
 class QMainWindow;
 
-namespace Boone
+namespace Vista
 {
 class CommandTasks : public QObject
 {

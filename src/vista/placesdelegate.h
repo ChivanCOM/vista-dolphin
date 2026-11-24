@@ -1,10 +1,10 @@
 /*
- * BOONE: drives in the navigation pane with Vista's capacity bar.
+ * Vista: drives in the navigation pane with Vista's capacity bar.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef BOONE_PLACESDELEGATE_H
-#define BOONE_PLACESDELEGATE_H
+#ifndef VISTA_PLACESDELEGATE_H
+#define VISTA_PLACESDELEGATE_H
 
 #include <QAbstractItemDelegate>
 #include <QHash>
@@ -12,7 +12,7 @@
 
 class KFilePlacesView;
 
-namespace Boone
+namespace Vista
 {
 /**
  * Wraps KIO's places delegate. Drives get a taller row: the name, and under it Vista's

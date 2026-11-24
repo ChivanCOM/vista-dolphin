@@ -82,15 +82,15 @@ public:
      */
     void setVisible(bool visible, Animated animated);
 
-    /** BOONE: the search term comes from Vista's search box on the toolbar. */
+    /** Vista: the search term comes from Vista's search box on the toolbar. */
     void setSearchTermFromOutside(const QString &text);
-    /** BOONE: Enter in that box. */
+    /** Vista: Enter in that box. */
     void commitFromOutside();
-    /** BOONE: hides this bar's own text field while the toolbar box stands in for it. */
+    /** Vista: hides this bar's own text field while the toolbar box stands in for it. */
     void setTermEditorShown(bool shown);
 
 private:
-    QWidget *m_booneSpacer = nullptr; // keeps Filter left and Close right without the text field
+    QWidget *m_vistaSpacer = nullptr; // keeps Filter left and Close right without the text field
 
 public:
 

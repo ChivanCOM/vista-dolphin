@@ -11,7 +11,7 @@
 
 #include "placespanel.h"
 
-#include "boone/placesdelegate.h"
+#include "vista/placesdelegate.h"
 
 #include <QPalette>
 
@@ -42,7 +42,7 @@ PlacesPanel::PlacesPanel(QWidget *parent)
 
     setAutoResizeItemsEnabled(false);
 
-    // BOONE: Vista's navigation pane - the places in link blue, the "Favorite Links"
+    // Vista: Vista's navigation pane - the places in link blue, the "Favorite Links"
     // heading in grey (KIO draws headings as a 60/40 mix of WindowText and Window)
     QPalette vista = palette();
     for (const auto group : {QPalette::Active, QPalette::Inactive}) {
@@ -51,7 +51,7 @@ PlacesPanel::PlacesPanel(QWidget *parent)
     }
     setPalette(vista);
     // drives with Vista's capacity bar under their name
-    setItemDelegate(new Boone::PlacesDelegate(this, itemDelegate()));
+    setItemDelegate(new Vista::PlacesDelegate(this, itemDelegate()));
 
     setTeardownFunction([this](const QModelIndex &index) {
         slotTearDownRequested(index);

@@ -1,9 +1,10 @@
 /*
- * BOONE: Windows Vista's command bar tasks.
+ * Vista: Windows Vista's command bar tasks.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
 #include "commandtasks.h"
+#include "vista.h"
 
 #include "capacitybar.h"
 #include "trash/dolphintrash.h"
@@ -25,7 +26,7 @@
 #include <QTimer>
 #include <QToolButton>
 
-using namespace Boone;
+using namespace Vista;
 
 namespace
 {
@@ -223,15 +224,16 @@ void CommandTasks::refresh()
     if (selection.isEmpty()) {
         if (url.isLocalFile() && url.toLocalFile() == QLatin1String("/")) {
             // the system drive stands in for Vista's Computer folder
-            if (have(QStringLiteral("denairu-control-panel"))) {
-                addTask(i18nc("@action Vista command bar", "System properties"), QStringLiteral("preferences-system"), [this]() {
-                    runCommand(QStringLiteral("denairu-control-panel"), {QStringLiteral("sysinfo")});
+            const QString cp = Vista::controlPanel();
+            if (!cp.isEmpty()) {
+                addTask(i18nc("@action Vista command bar", "System properties"), QStringLiteral("preferences-system"), [this, cp]() {
+                    runCommand(cp, {QStringLiteral("sysinfo")});
                 });
-                addTask(i18nc("@action Vista command bar", "Uninstall or change a program"), QStringLiteral("preferences-desktop-default-applications"), [this]() {
-                    runCommand(QStringLiteral("denairu-control-panel"), {QStringLiteral("--applet"), QStringLiteral("programs")});
+                addTask(i18nc("@action Vista command bar", "Uninstall or change a program"), QStringLiteral("preferences-desktop-default-applications"), [this, cp]() {
+                    runCommand(cp, {QStringLiteral("--applet"), QStringLiteral("programs")});
                 });
-                addTask(i18nc("@action Vista command bar", "Open Control Panel"), QStringLiteral("preferences-system"), [this]() {
-                    runCommand(QStringLiteral("denairu-control-panel"), {});
+                addTask(i18nc("@action Vista command bar", "Open Control Panel"), QStringLiteral("preferences-system"), [this, cp]() {
+                    runCommand(cp, {});
                 });
             }
             return;

@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "admin/workerintegration.h"
 #include "config-dolphin.h"
 #include "dbusinterface.h"
@@ -37,6 +38,7 @@
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QFileInfo>
+#include <QStandardPaths>
 #include <QSessionManager>
 
 #if HAVE_X11
@@ -72,35 +74,37 @@ int main(int argc, char **argv)
      */
     KIconTheme::initTheme();
 
-    // BOONE: in the Vista session, a font's own regular face must not be emboldened when
+    // Vista: a font's own regular face must not be emboldened when
     // bold is asked for (see DolphinUrlNavigator: Vista's breadcrumb has no bold crumb)
-    const bool booneSession = qEnvironmentVariableIsSet("DENAIRU_SESSION");
-    if (booneSession && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD")) {
+    const bool vistaSession = Vista::enabled();
+    if (vistaSession && !qEnvironmentVariableIsSet("QT_NO_SYNTHESIZED_BOLD")) {
         qputenv("QT_NO_SYNTHESIZED_BOLD", "1");
     }
 
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("org.kde.dolphin"), app.windowIcon()));
 
-    // BOONE: Explorer's command bar and address field are a style sheet that the session's
-    // dolphin launcher passes with -stylesheet. A window brought back by session restore at
-    // login is started from the saved command (this binary and -session only), so load the
-    // style sheet here too, and save the launcher as the command to restart with: it survives
-    // theme rebuilds (this binary's path names one build) and passes the style sheet itself.
-    const QStringList booneDirs{QStringLiteral("/usr/local/lib/denairu"), QStringLiteral("/usr/lib/denairu")};
-    if (booneSession && app.styleSheet().isEmpty()) {
-        for (const QString &dir : booneDirs) {
-            const QString qss = dir + QStringLiteral("/explorer/explorer.qss");
-            if (QFileInfo::exists(qss)) {
-                app.setStyleSheet(QStringLiteral("file:///") + qss);
-                break;
+    // Vista: Explorer's command bar, address field and tabs are drawn by a style sheet
+    // (vista-dolphin/explorer.qss, installed with this build). An explicit -stylesheet wins.
+    // BOONE installs it in its own folders and starts Dolphin through a launcher that passes
+    // it; a window brought back by session restore is started from the saved command, so
+    // BOONE's launcher is saved as the command to restart with when it exists.
+    const QStringList legacyDirs{QStringLiteral("/usr/local/lib/denairu"), QStringLiteral("/usr/lib/denairu")};
+    if (vistaSession && app.styleSheet().isEmpty()) {
+        QString qss = QStandardPaths::locate(QStandardPaths::GenericDataLocation, QStringLiteral("vista-dolphin/explorer.qss"));
+        for (const QString &dir : legacyDirs) {
+            if (qss.isEmpty() && QFileInfo::exists(dir + QStringLiteral("/explorer/explorer.qss"))) {
+                qss = dir + QStringLiteral("/explorer/explorer.qss");
             }
         }
+        if (!qss.isEmpty()) {
+            app.setStyleSheet(QStringLiteral("file:///") + qss);
+        }
     }
-    if (booneSession) {
-        QObject::connect(&app, &QGuiApplication::saveStateRequest, &app, [booneDirs](QSessionManager &sm) {
+    if (vistaSession) {
+        QObject::connect(&app, &QGuiApplication::saveStateRequest, &app, [legacyDirs](QSessionManager &sm) {
             QStringList command = sm.restartCommand();
-            for (const QString &dir : booneDirs) {
+            for (const QString &dir : legacyDirs) {
                 const QFileInfo launcher(dir + QStringLiteral("/bin/dolphin"));
                 if (!command.isEmpty() && launcher.isExecutable()) {
                     command[0] = launcher.filePath();

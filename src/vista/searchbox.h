@@ -1,17 +1,17 @@
 /*
- * BOONE: Windows Vista's search box for Dolphin's address-bar row.
+ * Vista: Windows Vista's search box for Dolphin's address-bar row.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef BOONE_SEARCHBOX_H
-#define BOONE_SEARCHBOX_H
+#ifndef VISTA_SEARCHBOX_H
+#define VISTA_SEARCHBOX_H
 
 #include <QPointer>
 #include <QWidgetAction>
 
 class QLineEdit;
 
-namespace Boone
+namespace Vista
 {
 /**
  * A "Search" field for the toolbar, like the one beside Vista Explorer's address bar.

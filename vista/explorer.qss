@@ -1,0 +1,129 @@
+/* Vista Dolphin: Windows Vista Explorer's command bar, address field, search box and tabs.
+   SPDX-License-Identifier: GPL-2.0-or-later
+   Installed as <datadir>/vista-dolphin/explorer.qss; Dolphin loads it at start (main.cpp)
+   unless -stylesheet is given. Everything else is drawn by the widget style (e.g. Kvantum). */
+/* measured from Vista Explorer: 30 px between a dark top and bottom line; a lit upper half
+   (#91b2bb -> #448b9f), a sharp step to the darker lower half (#186076) that warms back up
+   to a bright bottom edge (#99c7d4) */
+QToolBar#commandBar {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 #bacac9, stop:0.034 #91b2bb, stop:0.48 #448b9f, stop:0.5 #186076,
+        stop:0.9 #4e8d9e, stop:0.94 #5f97a4, stop:1 #99c7d4);
+    border: none;
+    border-top: 1px solid #45575f;
+    border-bottom: 1px solid #12343e;
+    min-height: 30px;
+    padding: 2px 6px;
+    spacing: 2px;
+}
+QToolBar#commandBar QToolButton {
+    color: white;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 3px 7px;
+}
+QToolBar#commandBar QToolButton:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 rgba(255,255,255,95), stop:0.48 rgba(255,255,255,45),
+        stop:0.5 rgba(255,255,255,18), stop:1 rgba(255,255,255,50));
+    border-color: rgba(255,255,255,150);
+}
+QToolBar#commandBar QToolButton:pressed, QToolBar#commandBar QToolButton:checked,
+QToolBar#commandBar QToolButton:open {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 rgba(0,20,40,90), stop:1 rgba(255,255,255,30));
+    border-color: rgba(10,30,45,170);
+}
+QToolBar#commandBar QToolButton::menu-indicator {
+    image: url(@EXPLORER_DIR@/arrow-down-white.svg);
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 7px; height: 4px;
+    right: 1px;
+}
+/* Organize (Dolphin's menu button) has no menu until clicked, so Qt draws no arrow */
+QToolBar#commandBar QToolButton[text="Organize"] {
+    padding-right: 17px;
+    background-image: url(@EXPLORER_DIR@/arrow-down-white.svg);
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-origin: content;
+}
+QToolBar#commandBar QToolButton[popupMode="1"] { padding-right: 2px; }
+QToolBar#commandBar QToolButton::menu-button { border: none; width: 12px; padding: 0; }
+/* Vista's split buttons (Views): clicking the label steps through the views, the arrow opens
+   the list - on hover a divider shows the two halves, the arrow half lit on its own */
+QToolBar#commandBar QToolButton::menu-button:hover {
+    border-left: 1px solid rgba(255,255,255,140);
+    border-top-right-radius: 3px; border-bottom-right-radius: 3px;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0 rgba(255,255,255,70), stop:0.48 rgba(255,255,255,30),
+        stop:0.5 rgba(255,255,255,8), stop:1 rgba(255,255,255,35));
+}
+QToolBar#commandBar QToolButton::menu-button:pressed, QToolBar#commandBar QToolButton::menu-button:open {
+    border-left: 1px solid rgba(10,30,45,170);
+}
+QToolBar#commandBar QToolButton::menu-arrow {
+    image: url(@EXPLORER_DIR@/arrow-down-white.svg); width: 7px; height: 4px;
+}
+QToolBar#commandBar::separator { width: 0; }
+
+/* Address bar: Vista's white field around the breadcrumb (Dolphin's navigators sit in a
+   QSplitter, which style sheets can paint; the breadcrumb itself is drawn by KIO). */
+QToolBar#mainToolBar QSplitter {
+    background: white;
+    border: 1px solid #8e9fb6;
+    border-top-color: #7d8ea6;
+    border-right: none;
+    border-top-left-radius: 2px; border-bottom-left-radius: 2px;
+    margin: 3px 0 3px 2px;
+}
+QToolBar#mainToolBar QSplitter:hover { border-color: #3d7fb3; }
+/* Vista's refresh button: a segment at the end of the address bar, behind a divider, the
+   same height (the patched Dolphin names it and lets it fill the row) */
+QToolBar#mainToolBar QToolButton#vistaRefresh {
+    background: white;
+    border: 1px solid #8e9fb6;
+    border-top-color: #7d8ea6;
+    border-top-right-radius: 2px; border-bottom-right-radius: 2px;
+    margin: 3px 0 3px 0;
+    padding: 0 4px;
+    max-height: 22px;         /* fill the row without making it taller */
+    min-width: 16px; max-width: 16px;  /* Vista's 25 px segment: the icon, 4 px each side */
+    qproperty-iconSize: 16px 16px;
+}
+QToolBar#mainToolBar QToolButton#vistaRefresh:hover {
+    border-color: #3d7fb3;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #eaf6fd, stop:0.5 #d9f0fc, stop:0.51 #bee6fd, stop:1 #a7d9f5);
+}
+QToolBar#mainToolBar QToolButton#vistaRefresh:pressed {
+    border-color: #2c628b;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e5f4fc, stop:0.5 #c4e5f6, stop:0.51 #98d1ef, stop:1 #68b3db);
+}
+
+/* Navigation pane colours: set by the patched Dolphin (blue places, grey heading); a
+   style sheet colour here would paint both the same */
+
+/* Search box (patched Dolphin): the same white field as the address bar, same height */
+QToolBar#mainToolBar QLineEdit#vistaSearchBox {
+    background: white;
+    border: 1px solid #8e9fb6;
+    border-top-color: #7d8ea6;
+    border-radius: 2px;
+    margin: 3px 2px 3px 6px;  /* Vista: 6 px after the address bar's refresh segment */
+    padding: 0 3px;
+}
+QToolBar#mainToolBar QLineEdit#vistaSearchBox:hover,
+QToolBar#mainToolBar QLineEdit#vistaSearchBox:focus { border-color: #3d7fb3; }
+
+/* Vista: one thin grey line between the navigation pane and the files (measured #b4b5b7),
+   no frame around the file view */
+QMainWindow::separator { width: 1px; height: 1px; background: #b4b5b7; }
+KItemListContainer { border: none; }
+
+/* Tabs (patched Dolphin marks the tab widget while its tab bar shows): Vista's 7 px between
+   related controls, below the command bar and in from the navigation pane; with one tab the
+   files stay right under the command bar */
+DolphinTabWidget[vistaTabs="true"]::tab-bar { top: 5px; left: 5px; }
+DolphinTabWidget[vistaTabs="true"]::pane { top: 5px; }

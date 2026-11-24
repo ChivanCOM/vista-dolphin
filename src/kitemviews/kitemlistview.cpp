@@ -782,7 +782,7 @@ void KItemListView::setDecorativeHeader(const QList<QByteArray> &roles)
 
 bool KItemListView::isHeaderVisible() const
 {
-    // BOONE: the details header only; a decorative header has its own fixed columns
+    // Vista: the details header only; a decorative header has its own fixed columns
     return m_headerWidget->isVisible() && !m_decorativeHeader;
 }
 

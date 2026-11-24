@@ -27,7 +27,7 @@ const QDockWidget::DockWidgetFeatures DefaultDockWidgetFeatures = QDockWidget::D
 }
 
 // Titlebar for the dock widgets when "Lock Layout" has been activated: empty, except for the
-// Folders panel, which gets Windows Vista's "Folders" header (BOONE). Clicking it folds the
+// Folders panel, which gets Windows Vista's "Folders" header (Vista). Clicking it folds the
 // tree away to just the header, leaving the room to the Favorite Links above, and back.
 class DolphinDockTitleBar : public QWidget
 {
@@ -89,7 +89,7 @@ public:
             }
         }
         KConfigGroup group(KSharedConfig::openConfig(), QStringLiteral("General"));
-        group.writeEntry("BooneFoldersCollapsed", collapsed);
+        group.writeEntry("VistaFoldersCollapsed", collapsed);
         update();
     }
 
@@ -172,10 +172,10 @@ void DolphinDockWidget::setLocked(bool lock)
             if (!m_dockTitleBar) {
                 auto titleBar = new DolphinDockTitleBar(this);
                 m_dockTitleBar = titleBar;
-                // BOONE: come back folded if the Folders tree was folded last time
+                // Vista: come back folded if the Folders tree was folded last time
                 QTimer::singleShot(0, titleBar, [titleBar]() {
                     const KConfigGroup group(KSharedConfig::openConfig(), QStringLiteral("General"));
-                    if (titleBar->isHeader() && group.readEntry("BooneFoldersCollapsed", false)) {
+                    if (titleBar->isHeader() && group.readEntry("VistaFoldersCollapsed", false)) {
                         titleBar->setCollapsed(true);
                     }
                 });

@@ -1,17 +1,17 @@
 /*
- * BOONE: Windows Vista's drive capacity bar, for the navigation pane and the Details Pane.
+ * Vista: Windows Vista's drive capacity bar, for the navigation pane and the Details Pane.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef BOONE_CAPACITYBAR_H
-#define BOONE_CAPACITYBAR_H
+#ifndef VISTA_CAPACITYBAR_H
+#define VISTA_CAPACITYBAR_H
 
 #include <QString>
 #include <QWidget>
 
 class QPainter;
 
-namespace Boone
+namespace Vista
 {
 /**
  * Paints Vista's capacity bar in @p rect (frame included): measured from Vista Explorer's

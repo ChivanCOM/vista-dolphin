@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "dolphintabwidget.h"
 
 #include "dolphin_generalsettings.h"
@@ -491,13 +492,13 @@ void DolphinTabWidget::renameTab(int index, const QString &name)
     updateTabName(index);
 }
 
-// BOONE: the style sheet sets Vista spacing between the command bar and the tabs, only while
+// Vista: the style sheet sets Vista spacing between the command bar and the tabs, only while
 // the tab bar shows (with one tab the file list sits right under the command bar)
-static void booneMarkTabBarShown(QTabWidget *widget)
+static void vistaMarkTabBarShown(QTabWidget *widget)
 {
     const bool shown = !widget->tabBarAutoHide() || widget->count() > 1;
-    if (widget->property("booneTabs").toBool() != shown) {
-        widget->setProperty("booneTabs", shown);
+    if (widget->property("vistaTabs").toBool() != shown) {
+        widget->setProperty("vistaTabs", shown);
         widget->style()->unpolish(widget);
         widget->style()->polish(widget);
         widget->update();
@@ -507,8 +508,8 @@ static void booneMarkTabBarShown(QTabWidget *widget)
 void DolphinTabWidget::paintEvent(QPaintEvent *event)
 {
     QTabWidget::paintEvent(event);
-    // BOONE: the tab strip's base line beside the tabs (see DolphinTabBar::paintEvent())
-    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION") || !property("booneTabs").toBool() || !tabBar()->isVisible()) {
+    // Vista: the tab strip's base line beside the tabs (see DolphinTabBar::paintEvent())
+    if (!Vista::enabled() || !property("vistaTabs").toBool() || !tabBar()->isVisible()) {
         return;
     }
     QPainter painter(this);
@@ -521,7 +522,7 @@ void DolphinTabWidget::paintEvent(QPaintEvent *event)
 void DolphinTabWidget::tabInserted(int index)
 {
     QTabWidget::tabInserted(index);
-    booneMarkTabBarShown(this);
+    vistaMarkTabBarShown(this);
 
     if (tabBar()->isVisible()) {
         // Resolve all pending tab icons
@@ -544,7 +545,7 @@ void DolphinTabWidget::tabInserted(int index)
 void DolphinTabWidget::tabRemoved(int index)
 {
     QTabWidget::tabRemoved(index);
-    booneMarkTabBarShown(this);
+    vistaMarkTabBarShown(this);
 
     Q_EMIT tabCountChanged(count());
     m_lastViewedTab->setActive(true);

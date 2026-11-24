@@ -7,11 +7,12 @@
  */
 
 #include "dolphinmainwindow.h"
+#include "vista/vista.h"
 #include <QProcess>
 #include <QDockWidget>
-#include "boone/commandtasks.h"
-#include "boone/detailspane.h"
-#include "boone/searchbox.h"
+#include "vista/commandtasks.h"
+#include "vista/detailspane.h"
+#include "vista/searchbox.h"
 
 #include "admin/workerintegration.h"
 #include "dolphin_generalsettings.h"
@@ -215,8 +216,8 @@ DolphinMainWindow::DolphinMainWindow()
     setupGUI(Save | Create | ToolBar, usePhoneUi ? QStringLiteral("dolphinuiforphones.rc") : QString() /* load the default dolphinui.rc file */);
     stateChanged(QStringLiteral("new_file"));
 
-    // BOONE: Vista's command bar tasks, after Organize and Views, following the selection
-    m_commandTasks = new Boone::CommandTasks(this,
+    // Vista: Vista's command bar tasks, after Organize and Views, following the selection
+    m_commandTasks = new Vista::CommandTasks(this,
                                              {[this](const QUrl &url) {
                                                   m_activeViewContainer->setUrl(url);
                                               },
@@ -961,8 +962,8 @@ void DolphinMainWindow::paste()
 
 void DolphinMainWindow::find()
 {
-    // BOONE: like Vista, Ctrl+F goes to the search box when it is on the toolbar
-    auto searchBox = qobject_cast<Boone::SearchBoxAction *>(actionCollection()->action(QStringLiteral("boone_search_box")));
+    // Vista: like Vista, Ctrl+F goes to the search box when it is on the toolbar
+    auto searchBox = qobject_cast<Vista::SearchBoxAction *>(actionCollection()->action(QStringLiteral("vista_search_box")));
     if (searchBox && searchBox->field() && searchBox->field()->isVisible()) {
         searchBox->field()->setFocus(Qt::ShortcutFocusReason);
         searchBox->field()->selectAll();
@@ -976,11 +977,11 @@ void DolphinMainWindow::updateSearchAction()
 {
     QAction *toggleSearchAction = actionCollection()->action(QStringLiteral("toggle_search"));
     toggleSearchAction->setChecked(m_activeViewContainer->isSearchBarVisible());
-    // BOONE: the toolbar box shows what the active view is searching for (nothing when not)
+    // Vista: the toolbar box shows what the active view is searching for (nothing when not)
     // (never while someone is typing in it: the search bar opens before it has the term)
-    auto searchBox = qobject_cast<Boone::SearchBoxAction *>(actionCollection()->action(QStringLiteral("boone_search_box")));
+    auto searchBox = qobject_cast<Vista::SearchBoxAction *>(actionCollection()->action(QStringLiteral("vista_search_box")));
     if (searchBox && !(searchBox->field() && searchBox->field()->hasFocus() && m_activeViewContainer->isSearchBarVisible())) {
-        searchBox->setText(m_activeViewContainer->booneSearchTerm());
+        searchBox->setText(m_activeViewContainer->vistaSearchTerm());
     }
 }
 
@@ -1585,7 +1586,7 @@ void DolphinMainWindow::updateHamburgerMenu()
     if (!menu) {
         menu = new QMenu(this);
         hamburgerMenu->setMenu(menu);
-        // BOONE: Vista's Organize menu lists Cut, Copy, Paste, Rename... itself, so they are
+        // Vista: Vista's Organize menu lists Cut, Copy, Paste, Rename... itself, so they are
         // not hidden as "already in the basic actions menu"
         hamburgerMenu->hideActionsOf(qobject_cast<KToolBarPopupAction *>(ac->action(QStringLiteral("zoom")))->popupMenu());
     } else {
@@ -1598,7 +1599,7 @@ void DolphinMainWindow::updateHamburgerMenu()
         menu->addSeparator();
     }
 
-    // BOONE: Windows Vista's Organize menu - New Folder; Cut, Copy, Paste, Undo, Redo,
+    // Vista: Windows Vista's Organize menu - New Folder; Cut, Copy, Paste, Undo, Redo,
     // Select All; Layout; Folder and Search Options; Delete, Rename, Properties; Close
     // (Dolphin's own extras stay reachable under Configure at the end).
     auto add = [menu, ac](const QString &name) {
@@ -1617,7 +1618,7 @@ void DolphinMainWindow::updateHamburgerMenu()
 #endif
     add(KStandardAction::name(KStandardAction::SelectAll));
     menu->addSeparator();
-    // BOONE: Vista's Organize > Layout (Menu Bar, Details Pane, Preview Pane, Navigation Pane)
+    // Vista: Vista's Organize > Layout (Menu Bar, Details Pane, Preview Pane, Navigation Pane)
     auto layoutMenu = menu->addMenu(QIcon::fromTheme(QStringLiteral("view-split-left-right")), i18nc("@action:inmenu Vista Organize menu", "Layout"));
     layoutMenu->addAction(ac->action(KStandardAction::name(KStandardAction::ShowMenubar)));
     layoutMenu->addAction(ac->action(QStringLiteral("show_details_pane")));
@@ -1629,10 +1630,10 @@ void DolphinMainWindow::updateHamburgerMenu()
     layoutMenu->addAction(ac->action(QStringLiteral("show_terminal_panel")));
     hamburgerMenu->hideActionsOf(layoutMenu);
     // "Folder and Search Options" opens the Control Panel's Folder Options when it is there
-    if (!QStandardPaths::findExecutable(QStringLiteral("denairu-control-panel")).isEmpty()) {
+    if (const QString cp = Vista::controlPanel(); !cp.isEmpty()) {
         auto folderOptions = menu->addAction(QIcon::fromTheme(QStringLiteral("folder")), i18nc("@action:inmenu Vista Organize menu", "Folder and Search Options"));
-        connect(folderOptions, &QAction::triggered, this, []() {
-            QProcess::startDetached(QStringLiteral("denairu-control-panel"), {QStringLiteral("--applet"), QStringLiteral("folderoptions")});
+        connect(folderOptions, &QAction::triggered, this, [cp]() {
+            QProcess::startDetached(cp, {QStringLiteral("--applet"), QStringLiteral("folderoptions")});
         });
     }
     menu->addSeparator();
@@ -1983,21 +1984,21 @@ void DolphinMainWindow::setupActions()
         }
     });
 
-    // BOONE: Windows Vista's search box, for the address-bar row
-    auto searchBox = new Boone::SearchBoxAction(this);
-    actionCollection()->addAction(QStringLiteral("boone_search_box"), searchBox);
-    connect(searchBox, &Boone::SearchBoxAction::searchTermEdited, this, [this](const QString &text) {
-        DolphinViewContainer::s_booneExternalSearchBox = true;
+    // Vista: Windows Vista's search box, for the address-bar row
+    auto searchBox = new Vista::SearchBoxAction(this);
+    actionCollection()->addAction(QStringLiteral("vista_search_box"), searchBox);
+    connect(searchBox, &Vista::SearchBoxAction::searchTermEdited, this, [this](const QString &text) {
+        DolphinViewContainer::s_vistaExternalSearchBox = true;
         if (text.isEmpty()) {
             if (m_activeViewContainer->isSearchBarVisible()) {
                 m_activeViewContainer->setSearchBarVisible(false);
             }
             return;
         }
-        m_activeViewContainer->booneSearch(text);
+        m_activeViewContainer->vistaSearch(text);
     });
-    connect(searchBox, &Boone::SearchBoxAction::searchCommitted, this, [this]() {
-        m_activeViewContainer->booneCommitSearch();
+    connect(searchBox, &Vista::SearchBoxAction::searchCommitted, this, [this]() {
+        m_activeViewContainer->vistaCommitSearch();
     });
     toggleSearchAction->setVisible(false); // the box stands in for Dolphin's search button
 
@@ -2596,11 +2597,11 @@ void DolphinMainWindow::setupDockWidgets()
     actionCollection()->setDefaultShortcut(focusPlacesPanel, Qt::CTRL | Qt::Key_P);
     connect(focusPlacesPanel, &QAction::triggered, this, &DolphinMainWindow::togglePlacesPanelFocus);
 
-    // BOONE: Windows Vista's Details Pane, a full-width strip along the bottom of the window
+    // Vista: Windows Vista's Details Pane, a full-width strip along the bottom of the window
     // (the bottom panel area owns both bottom corners, so it also runs under the places)
-    m_detailsPane = new Boone::DetailsPane();
+    m_detailsPane = new Vista::DetailsPane();
     auto detailsDock = new QDockWidget(i18nc("@title:window Vista", "Details Pane"), this);
-    detailsDock->setObjectName(QStringLiteral("booneDetailsDock"));
+    detailsDock->setObjectName(QStringLiteral("vistaDetailsDock"));
     detailsDock->setTitleBarWidget(new QWidget(detailsDock));
     detailsDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     detailsDock->setAllowedAreas(Qt::BottomDockWidgetArea);

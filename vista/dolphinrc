@@ -1,0 +1,32 @@
+# Vista Dolphin: Explorer defaults (installed as the system dolphinrc, e.g. /etc/xdg/dolphinrc,
+# unless built with -DVISTA_INSTALL_DEFAULTS=OFF; users' own settings still win).
+# SPDX-License-Identifier: GPL-2.0-or-later
+# State: Explorer layout from make-dolphin-state.py (address bar, command bar below it,
+# Places with the Folders tree under it, Details Pane along the bottom). ShowStatusBar=2: no
+# status bar - the Details Pane shows what it would.
+[General]
+ShowStatusBar=2
+# Settings format Dolphin expects; older values make it add a second menu button.
+Version=202
+# No hover "+" selection toggle on items: Vista selects by clicking (check boxes are off by default).
+ShowSelectionToggle=false
+
+[MainWindow]
+MenuBar=Disabled
+State=AAAA/wAAAAD9AAAAAwAAAAAAAACqAAACbfwCAAAAAvsAAAAUAHAAbABhAGMAZQBzAEQAbwBjAGsBAAAAIgAAAXcAAAATAP////sAAAAWAGYAbwBsAGQAZQByAHMARABvAGMAawEAAAGfAAAA8AAAABMA////AAAAAQAAAAAAAAAA/AIAAAAB+wAAABAAaQBuAGYAbwBEAG8AYwBrAAAAAAD/////AAAAEwD///8AAAADAAAEAAAAABP8AQAAAAL7AAAAGAB0AGUAcgBtAGkAbgBhAGwARABvAGMAawAAAAAA/////wAAADQA////+wAAACAAdgBpAHMAdABhAEQAZQB0AGEAaQBsAHMARABvAGMAawEAAAAAAAAEAAAAADQA////AAADUAAAAm0AAAAEAAAABAAAAAgAAAAI/AAAAAIAAAACAAAAAQAAABYAbQBhAGkAbgBUAG8AbwBsAEIAYQByAQAAAAD/////AAAAAAAAAAAAAAACAAAAAQAAABQAYwBvAG0AbQBhAG4AZABCAGEAcgEAAAAA/////wAAAAAAAAAA
+
+# Vista's default view is Medium Icons (48 px); List and Details use 16 px icons. With
+# previews on, Dolphin uses PreviewSize, so both keys are set.
+[IconsMode]
+IconSize=48
+PreviewSize=48
+
+[CompactMode]
+IconSize=16
+PreviewSize=16
+
+[DetailsMode]
+IconSize=16
+PreviewSize=16
+# Vista's Details view has no folder-expand arrows: icons start at the Name column's edge
+ExpandableFolders=false

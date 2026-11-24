@@ -362,7 +362,7 @@ void DolphinViewContainer::setSearchBarVisible(bool visible)
         m_topLayout->addWidget(m_searchBar, positionFor.searchBar, 0);
     }
 
-    m_searchBar->setTermEditorShown(!s_booneExternalSearchBox);
+    m_searchBar->setTermEditorShown(!s_vistaExternalSearchBox);
     m_searchBar->setVisible(true, WithAnimation);
 
     // The Search::Bar has been set visible but its state does not yet match with this view container or view.
@@ -394,9 +394,9 @@ void DolphinViewContainer::setSearchBarVisible(bool visible)
     m_searchBar->updateStateToMatch(std::make_shared<const Search::DolphinQuery>(m_urlNavigator->locationUrl(), QUrl::fromUserInput(QDir::homePath())));
 }
 
-bool DolphinViewContainer::s_booneExternalSearchBox = false;
+bool DolphinViewContainer::s_vistaExternalSearchBox = false;
 
-void DolphinViewContainer::booneSearch(const QString &text)
+void DolphinViewContainer::vistaSearch(const QString &text)
 {
     if (!isSearchBarVisible()) {
         setSearchBarVisible(true);
@@ -404,14 +404,14 @@ void DolphinViewContainer::booneSearch(const QString &text)
     m_searchBar->setSearchTermFromOutside(text);
 }
 
-void DolphinViewContainer::booneCommitSearch()
+void DolphinViewContainer::vistaCommitSearch()
 {
     if (m_searchBar && isSearchBarVisible()) {
         m_searchBar->commitFromOutside();
     }
 }
 
-QString DolphinViewContainer::booneSearchTerm() const
+QString DolphinViewContainer::vistaSearchTerm() const
 {
     return (m_searchBar && isSearchBarVisible()) ? m_searchBar->text() : QString();
 }

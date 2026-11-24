@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "dolphintabbar.h"
 
 #include <KLocalizedString>
@@ -38,9 +39,9 @@ protected:
     };
 };
 
-// BOONE: the theme's close glyph sits at the bottom of its 16 px icon, so a button centred in
+// Vista: the theme's close glyph sits at the bottom of its 16 px icon, so a button centred in
 // the tab shows its X low. Lift each close button 2 px whenever the tab bar places it.
-class BooneLiftCloseButton : public QObject
+class VistaLiftCloseButton : public QObject
 {
 public:
     using QObject::QObject;
@@ -50,9 +51,9 @@ protected:
     {
         if (ev->type() == QEvent::Move) {
             auto *button = static_cast<QWidget *>(obj);
-            if (button->pos() != button->property("booneLifted").toPoint()) {
+            if (button->pos() != button->property("vistaLifted").toPoint()) {
                 const QPoint lifted = button->pos() - QPoint(0, 2);
-                button->setProperty("booneLifted", lifted);
+                button->setProperty("vistaLifted", lifted);
                 button->move(lifted);
             }
         }
@@ -240,23 +241,23 @@ void DolphinTabBar::updateAutoActivationTimer(const int index)
 void DolphinTabBar::tabInserted(int index)
 {
     QTabBar::tabInserted(index);
-    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
+    if (!Vista::enabled()) {
         return;
     }
     if (QWidget *button = tabButton(index, QTabBar::RightSide)) {
-        static auto *lift = new BooneLiftCloseButton(qApp);
+        static auto *lift = new VistaLiftCloseButton(qApp);
         button->installEventFilter(lift);
         button->move(button->pos()); // no-op unless already placed; the next placement lifts it
     }
 }
 
-// BOONE: the tab strip's base line (the tabs' outline colour) runs under every tab but the
+// Vista: the tab strip's base line (the tabs' outline colour) runs under every tab but the
 // current one, which stays open into the folder below. DolphinTabWidget continues it
 // beside the tabs.
 void DolphinTabBar::paintEvent(QPaintEvent *event)
 {
     QTabBar::paintEvent(event);
-    if (!qEnvironmentVariableIsSet("DENAIRU_SESSION") || count() < 1) {
+    if (!Vista::enabled() || count() < 1) {
         return;
     }
     QPainter painter(this);

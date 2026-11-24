@@ -6,6 +6,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+#include "vista/vista.h"
 #include "kitemlistwidget.h"
 
 #include "kitemlistview.h"
@@ -131,8 +132,8 @@ void KItemListWidget::paint(QPainter *painter, const QStyleOptionGraphicsItem *o
         drawItemStyleOption(painter, widget, activeState | QStyle::State_Enabled | QStyle::State_Selected | QStyle::State_Item);
     }
 
-    if (m_hoverOpacity > 0.0 && qEnvironmentVariableIsSet("DENAIRU_SESSION")) {
-        // BOONE: drawn directly, not through the item-sized cache, which would clip the
+    if (m_hoverOpacity > 0.0 && Vista::enabled()) {
+        // Vista: drawn directly, not through the item-sized cache, which would clip the
         // highlight's padding beyond the item (List view) and make it narrower than a selection
         const QStyle::State activeState(isActiveWindow() && widget->hasFocus() ? QStyle::State_Active | QStyle::State_Enabled : 0);
         const qreal opacity = painter->opacity();
@@ -628,9 +629,9 @@ void KItemListWidget::setPressed(bool enabled)
     }
 }
 
-// BOONE: Windows Vista's Explorer item states (also Windows 7's): pale blue gradients with a
+// Vista: Windows Vista's Explorer item states (also Windows 7's): pale blue gradients with a
 // 1 px border, 2 px corners and a faint white inner edge, instead of an accent-coloured wash
-static void booneDrawItemState(QPainter *painter, const QRectF &area, const QColor &border, const QColor &top, const QColor &bottom, qreal innerAlpha)
+static void vistaDrawItemState(QPainter *painter, const QRectF &area, const QColor &border, const QColor &top, const QColor &bottom, qreal innerAlpha)
 {
     const QRectF outer = QRectF(area.toRect()).adjusted(0.5, 0.5, -0.5, -0.5);
     painter->save();
@@ -654,24 +655,24 @@ static void booneDrawItemState(QPainter *painter, const QRectF &area, const QCol
 
 void KItemListWidget::drawItemStyleOption(QPainter *painter, QWidget *widget, QStyle::State styleState)
 {
-    static const bool boone = qEnvironmentVariableIsSet("DENAIRU_SESSION");
-    if (boone) {
+    static const bool vista = Vista::enabled();
+    if (vista) {
         const QRectF area = selectionRectFull();
         const bool active = styleState & QStyle::State_Active;
         const bool hoverLayer = styleState & QStyle::State_MouseOver;
         if (m_clickHighlighted || (m_selected && hoverLayer)) {
             // hot and selected
-            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xd4, 0xe6, 0xfc), QColor(0xb6, 0xd4, 0xfa), 0.5);
+            vistaDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xd4, 0xe6, 0xfc), QColor(0xb6, 0xd4, 0xfa), 0.5);
         } else if (hoverLayer) {
-            booneDrawItemState(painter, area, QColor(0xb8, 0xd6, 0xfb), QColor(0xfa, 0xfb, 0xfd), QColor(0xeb, 0xf3, 0xfd), 0.6);
+            vistaDrawItemState(painter, area, QColor(0xb8, 0xd6, 0xfb), QColor(0xfa, 0xfb, 0xfd), QColor(0xeb, 0xf3, 0xfd), 0.6);
         } else if (m_selected && active) {
-            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xdc, 0xeb, 0xfc), QColor(0xc1, 0xdb, 0xfc), 0.5);
+            vistaDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce), QColor(0xdc, 0xeb, 0xfc), QColor(0xc1, 0xdb, 0xfc), 0.5);
         } else if (m_selected) {
             // selected in a window or view without focus: Vista's grey
-            booneDrawItemState(painter, area, QColor(0xd9, 0xd9, 0xd9), QColor(0xf8, 0xf8, 0xf8), QColor(0xe5, 0xe5, 0xe5), 0.5);
+            vistaDrawItemState(painter, area, QColor(0xd9, 0xd9, 0xd9), QColor(0xf8, 0xf8, 0xf8), QColor(0xe5, 0xe5, 0xe5), 0.5);
         } else if (m_current && active) {
             // the keyboard's item, not selected: its outline only
-            booneDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce, 190), QColor(), QColor(), 0);
+            vistaDrawItemState(painter, area, QColor(0x7d, 0xa2, 0xce, 190), QColor(), QColor(), 0);
         }
         return;
     }

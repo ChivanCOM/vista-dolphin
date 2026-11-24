@@ -95,10 +95,10 @@ Bar::Bar(std::shared_ptr<const DolphinQuery> dolphinQuery, QWidget *parent)
     firstRowLayout->setContentsMargins(0, 0, 0, 0);
     firstRowLayout->addWidget(m_searchTermEditor);
     firstRowLayout->addWidget(filterButton);
-    m_booneSpacer = new QWidget(contentsContainer);
-    m_booneSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    m_booneSpacer->setVisible(false);
-    firstRowLayout->addWidget(m_booneSpacer);
+    m_vistaSpacer = new QWidget(contentsContainer);
+    m_vistaSpacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    m_vistaSpacer->setVisible(false);
+    firstRowLayout->addWidget(m_vistaSpacer);
     firstRowLayout->addWidget(closeButton);
 
     // Create "From Here" and "Your files" buttons
@@ -201,7 +201,7 @@ void Bar::commitFromOutside()
 void Bar::setTermEditorShown(bool shown)
 {
     m_searchTermEditor->setVisible(shown);
-    m_booneSpacer->setVisible(!shown);
+    m_vistaSpacer->setVisible(!shown);
 }
 
 void Bar::selectAll()

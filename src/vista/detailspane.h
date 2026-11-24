@@ -1,10 +1,10 @@
 /*
- * BOONE: Windows Vista's Details Pane for Dolphin.
+ * Vista: Windows Vista's Details Pane for Dolphin.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-#ifndef BOONE_DETAILSPANE_H
-#define BOONE_DETAILSPANE_H
+#ifndef VISTA_DETAILSPANE_H
+#define VISTA_DETAILSPANE_H
 
 #include <KFileItem>
 
@@ -16,7 +16,7 @@ class QGridLayout;
 class QLabel;
 class KJob;
 
-namespace Boone
+namespace Vista
 {
 /**
  * The strip along the bottom of a Windows Vista Explorer window: a large icon (or a

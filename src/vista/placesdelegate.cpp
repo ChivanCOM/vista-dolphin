@@ -1,5 +1,5 @@
 /*
- * BOONE: drives in the navigation pane with Vista's capacity bar.
+ * Vista: drives in the navigation pane with Vista's capacity bar.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -16,7 +16,7 @@
 #include <QPainter>
 #include <QStyle>
 
-using namespace Boone;
+using namespace Vista;
 
 namespace
 {

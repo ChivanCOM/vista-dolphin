@@ -1,5 +1,5 @@
 /*
- * BOONE: Windows Vista's drive capacity bar.
+ * Vista: Windows Vista's drive capacity bar.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -10,7 +10,7 @@
 #include <QPainter>
 #include <QStorageInfo>
 
-namespace Boone
+namespace Vista
 {
 void paintCapacityBar(QPainter *painter, const QRect &rect, qreal used)
 {

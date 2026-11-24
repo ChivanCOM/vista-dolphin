@@ -1,5 +1,5 @@
 /*
- * BOONE: Windows Vista's Details Pane for Dolphin.
+ * Vista: Windows Vista's Details Pane for Dolphin.
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -24,9 +24,9 @@
 #include <QStyle>
 #include <QVBoxLayout>
 
-using namespace Boone;
+using namespace Vista;
 
-static QString booneplaceName(const QUrl &url)
+static QString vistaplaceName(const QUrl &url)
 {
     KFilePlacesModel *places = DolphinPlacesModelSingleton::instance().placesModel();
     const QUrl wanted = url.adjusted(QUrl::StripTrailingSlash);
@@ -55,7 +55,7 @@ constexpr int TextTop = 9;     // first text line from the top line
 DetailsPane::DetailsPane(QWidget *parent)
     : QWidget(parent)
 {
-    setObjectName(QStringLiteral("booneDetailsPane"));
+    setObjectName(QStringLiteral("vistaDetailsPane"));
     setAutoFillBackground(false);
 
     const int margin = style()->pixelMetric(QStyle::PM_LayoutLeftMargin);
@@ -151,7 +151,7 @@ void DetailsPane::refresh()
         }
         // a drive or other place by its place name ("DATA", "Internal Drive"), as Vista
         // names drives rather than showing a path
-        const QString placeName = booneplaceName(url);
+        const QString placeName = vistaplaceName(url);
         if (!placeName.isEmpty()) {
             name = placeName;
         }

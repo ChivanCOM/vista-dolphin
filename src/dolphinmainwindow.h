@@ -36,7 +36,7 @@ typedef KIO::FileUndoManager::CommandType CommandType;
 class DiskSpaceUsageMenu;
 class DolphinBookmarkHandler;
 class DolphinViewActionHandler;
-namespace Boone
+namespace Vista
 {
 class CommandTasks;
 class DetailsPane;
@@ -812,8 +812,8 @@ private:
 
     KRecentFilesAction *m_recentFiles = nullptr;
 
-    Boone::DetailsPane *m_detailsPane = nullptr; // BOONE: Vista's Details Pane
-    Boone::CommandTasks *m_commandTasks = nullptr; // BOONE: Vista's command bar tasks
+    Vista::DetailsPane *m_detailsPane = nullptr; // Vista: Vista's Details Pane
+    Vista::CommandTasks *m_commandTasks = nullptr; // Vista: Vista's command bar tasks
 
     friend class DolphinMainWindowTest;
 };
