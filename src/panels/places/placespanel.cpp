@@ -50,8 +50,6 @@ PlacesPanel::PlacesPanel(QWidget *parent)
         vista.setColor(group, QPalette::WindowText, QColor(0x14, 0x14, 0x14));
     }
     setPalette(vista);
-    // drives with Vista's capacity bar under their name
-    setItemDelegate(new Vista::PlacesDelegate(this, itemDelegate()));
 
     setTeardownFunction([this](const QModelIndex &index) {
         slotTearDownRequested(index);
@@ -88,6 +86,8 @@ PlacesPanel::PlacesPanel(QWidget *parent)
     // Set the model here so that it's loaded in time for the sizeHint to properly apply (setting it upon showEvent is too late)
     auto *placesModel = DolphinPlacesModelSingleton::instance().placesModel();
     setModel(placesModel);
+    // Vista: drives with Vista's capacity bar under their name
+    Vista::PlacesDelegate::install(this);
 
     connect(placesModel, &KFilePlacesModel::errorMessage, this, &PlacesPanel::errorMessage);
     connect(placesModel, &KFilePlacesModel::teardownDone, this, &PlacesPanel::slotTearDownDone);

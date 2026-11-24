@@ -37,6 +37,27 @@ PlacesDelegate::PlacesDelegate(KFilePlacesView *view, QAbstractItemDelegate *inn
     connect(inner, &QAbstractItemDelegate::sizeHintChanged, this, &QAbstractItemDelegate::sizeHintChanged);
 }
 
+void PlacesDelegate::install(KFilePlacesView *view)
+{
+    QAbstractItemModel *model = view->model();
+    if (!model) {
+        return;
+    }
+    auto *delegate = new PlacesDelegate(view, view->itemDelegate());
+    // the row slots are by row number, so cover new rows (drives plugged in, places added)
+    const auto coverAllRows = [view, delegate, model]() {
+        for (int row = 0; row < model->rowCount(); ++row) {
+            if (view->itemDelegateForRow(row) != delegate) {
+                view->setItemDelegateForRow(row, delegate);
+            }
+        }
+    };
+    coverAllRows();
+    connect(model, &QAbstractItemModel::rowsInserted, delegate, coverAllRows);
+    connect(model, &QAbstractItemModel::modelReset, delegate, coverAllRows);
+    connect(model, &QAbstractItemModel::layoutChanged, delegate, coverAllRows);
+}
+
 bool PlacesDelegate::showsBar(const QModelIndex &index) const
 {
     if (!index.data(KFilePlacesModel::CapacityBarRecommendedRole).toBool()) {
