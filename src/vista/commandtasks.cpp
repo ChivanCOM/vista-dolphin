@@ -1,5 +1,8 @@
 /*
  * Vista: Windows Vista's command bar tasks.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -159,6 +162,7 @@ void CommandTasks::addOpenTask(const KFileItemList &items, const QString &text)
         return;
     }
     auto menu = new QMenu(m_window);
+    // QAction::setMenu() does not take ownership: the menu goes when its task does
     connect(open, &QObject::destroyed, menu, &QObject::deleteLater);
     const KService::List services = KApplicationTrader::queryByMimeType(mime);
     QStringList listed; // one entry per program name (a program can be installed twice)
@@ -192,6 +196,7 @@ void CommandTasks::addOpenTask(const KFileItemList &items, const QString &text)
 void CommandTasks::refresh()
 {
     m_refreshPending = false;
+    // the tasks are rebuilt from scratch for each selection (QPointer: already gone is fine)
     for (const QPointer<QAction> &task : std::as_const(m_tasks)) {
         delete task.data();
     }

@@ -1,5 +1,8 @@
 /*
  * Vista: drives in the navigation pane with Vista's capacity bar.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -23,7 +26,7 @@ namespace
 constexpr int LateralMargin = 4; // KIO's, so icons and text line up with the other places
 constexpr int TextToBar = 3;
 constexpr int MaxBarWidth = 150;
-constexpr qint64 SpaceRefreshMs = 30 * 1000;
+constexpr qint64 SpaceRefreshMs = 30 * 1000; // sizeHint() and paint() run often; statfs need not
 }
 
 PlacesDelegate::PlacesDelegate(KFilePlacesView *view, QAbstractItemDelegate *inner)
@@ -146,6 +149,7 @@ void PlacesDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option
     painter->restore();
 }
 
+// KIO's delegate keeps handling events and tooltips for every row: pass them through
 bool PlacesDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     return m_inner ? m_inner->editorEvent(event, model, option, index) : false;

@@ -1,5 +1,8 @@
 /*
  * Vista: drives in the navigation pane with Vista's capacity bar.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 

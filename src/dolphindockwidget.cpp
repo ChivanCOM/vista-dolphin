@@ -67,7 +67,9 @@ public:
 
     bool isCollapsed() const
     {
-        return m_dock->widget() && !m_dock->widget()->isVisible();
+        // isHidden(), not !isVisible(): the tree is only folded when we hid it ourselves, not
+        // because the dock or the window is not (yet) shown
+        return m_dock->widget() && m_dock->widget()->isHidden();
     }
 
     void setCollapsed(bool collapsed)

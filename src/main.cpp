@@ -98,6 +98,8 @@ int main(int argc, char **argv)
             }
         }
         if (!qss.isEmpty()) {
+            // Qt reads a style sheet starting with "file:///" from the file after those 8 characters,
+            // so the absolute path keeps its leading slash
             app.setStyleSheet(QStringLiteral("file:///") + qss);
         }
     }

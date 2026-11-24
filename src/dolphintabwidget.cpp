@@ -499,6 +499,7 @@ static void vistaMarkTabBarShown(QTabWidget *widget)
     const bool shown = !widget->tabBarAutoHide() || widget->count() > 1;
     if (widget->property("vistaTabs").toBool() != shown) {
         widget->setProperty("vistaTabs", shown);
+        // re-polish so the style sheet's [vistaTabs="true"] selector is evaluated again
         widget->style()->unpolish(widget);
         widget->style()->polish(widget);
         widget->update();

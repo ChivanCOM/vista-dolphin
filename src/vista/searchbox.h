@@ -1,5 +1,8 @@
 /*
  * Vista: Windows Vista's search box for Dolphin's address-bar row.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 

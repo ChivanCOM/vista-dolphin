@@ -969,6 +969,8 @@ void DolphinMainWindow::find()
         searchBox->field()->selectAll();
         return;
     }
+    // without the box (toolbar hidden or rearranged) the search bar needs its own field back
+    DolphinViewContainer::s_vistaExternalSearchBox = false;
     m_activeViewContainer->setSearchBarVisible(true);
     m_activeViewContainer->setFocusToSearchBar();
 }
@@ -1988,6 +1990,7 @@ void DolphinMainWindow::setupActions()
     auto searchBox = new Vista::SearchBoxAction(this);
     actionCollection()->addAction(QStringLiteral("vista_search_box"), searchBox);
     connect(searchBox, &Vista::SearchBoxAction::searchTermEdited, this, [this](const QString &text) {
+        // from now on the search bar only adds its filters; the term lives in the box
         DolphinViewContainer::s_vistaExternalSearchBox = true;
         if (text.isEmpty()) {
             if (m_activeViewContainer->isSearchBarVisible()) {
@@ -2602,7 +2605,7 @@ void DolphinMainWindow::setupDockWidgets()
     m_detailsPane = new Vista::DetailsPane();
     auto detailsDock = new QDockWidget(i18nc("@title:window Vista", "Details Pane"), this);
     detailsDock->setObjectName(QStringLiteral("vistaDetailsDock"));
-    detailsDock->setTitleBarWidget(new QWidget(detailsDock));
+    detailsDock->setTitleBarWidget(new QWidget(detailsDock)); // an empty widget: no title bar
     detailsDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
     detailsDock->setAllowedAreas(Qt::BottomDockWidgetArea);
     detailsDock->setWidget(m_detailsPane);

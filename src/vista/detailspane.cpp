@@ -1,5 +1,8 @@
 /*
  * Vista: Windows Vista's Details Pane for Dolphin.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -284,6 +287,7 @@ void DetailsPane::requestPreview(const KFileItem &item)
     job->setDevicePixelRatio(devicePixelRatioF());
     job->setIgnoreMaximumSize(false);
     connect(job, &KIO::PreviewJob::gotPreview, this, [this](const KFileItem &shown, const QPixmap &preview) {
+        // the selection may have moved on while the thumbnail was being made
         if (shown.url() == m_shownItem.url()) {
             m_icon->setPixmap(preview);
         }

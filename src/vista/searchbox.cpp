@@ -1,5 +1,8 @@
 /*
  * Vista: Windows Vista's search box for Dolphin's address-bar row.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -94,8 +97,14 @@ QLineEdit *SearchBoxAction::field() const
 void SearchBoxAction::setText(const QString &text)
 {
     if (m_field && m_field->text() != text) {
-        const QSignalBlocker blocker(m_field);
-        m_field->setText(text);
+        {
+            const QSignalBlocker blocker(m_field);
+            m_field->setText(text);
+        }
+        // the blocker also kept textChanged from reaching the italic-placeholder handler
+        QFont font = m_field->font();
+        font.setItalic(text.isEmpty());
+        m_field->setFont(font);
     }
 }
 

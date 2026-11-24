@@ -1,6 +1,8 @@
 /*
- * Vista Dolphin: the switch for everything that makes Dolphin look and work like
- * Windows Vista's Explorer.
+ * Vista Dolphin: the DOLPHIN_VISTA switch, and where to find the Vista Control Panel.
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
@@ -14,8 +16,20 @@
 namespace Vista
 {
 /**
- * True unless DOLPHIN_VISTA=0 is set, in which case this build behaves like plain Dolphin
- * (handy for comparing, or for a session that should keep the stock look). Read once.
+ * True unless DOLPHIN_VISTA=0 is set. Read once.
+ *
+ * DOLPHIN_VISTA=0 only switches off the code that checks this, which is mostly drawing:
+ * the explorer.qss style sheet, unsynthesised bold and regular-weight breadcrumb crumbs,
+ * the joined refresh button, the session-restore launcher, Vista's item highlight colours
+ * and hover, the Vista column header painting, the wider icon-view padding, unstriped
+ * Details rows, and the tab strip's base line and lifted close buttons.
+ *
+ * It is NOT a "plain Dolphin" switch. Still on: the Details Pane, command bar tasks, the
+ * Organize menu (replacing the hamburger menu), the Views menu, the search box (and the
+ * hidden search button), column headers in the Icons and Compact views, the Folders panel
+ * header, "Favorite Links", the places colours and drive capacity bars, the always-shown
+ * places selector, the breadcrumb spacing, and whatever the installed dolphinui.rc and
+ * dolphinrc set (toolbar layout, window layout, settings).
  */
 inline bool enabled()
 {

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
-# Vista Dolphin: the files that complete Windows Vista Explorer's look (see README.vista.md).
+# Vista Dolphin: the files that complete Windows Vista Explorer's look (see README.md).
 
 # Explorer's command bar, address field and tabs: Dolphin loads this style sheet at start.
 set(VISTA_DATA_DIR "${KDE_INSTALL_FULL_DATADIR}/vista-dolphin")

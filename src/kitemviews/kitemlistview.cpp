@@ -379,6 +379,8 @@ void KItemListView::setGeometry(const QRectF &rect)
     }
 
     const QSizeF newSize = rect.size();
+    // Vista: icon and compact layouts have a fixed item size, so the branch below that keeps
+    // the details header as wide as the view does not run for them
     if (m_decorativeHeader) {
         m_headerWidget->resize(rect.width(), m_headerWidget->size().height());
     }
@@ -692,6 +694,7 @@ bool KItemListView::isTransactionActive() const
 
 void KItemListView::setHeaderVisible(bool visible)
 {
+    // Vista: the decorative header and the details header share m_headerWidget
     if (m_decorativeHeader) {
         setDecorativeHeader({});
     }

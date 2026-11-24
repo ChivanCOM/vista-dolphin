@@ -1,6 +1,9 @@
 /*
  * Vista: Windows Vista's command bar tasks - buttons after Organize and Views that follow
  * what is selected (Preview, Slide Show, Play, E-mail, Extract All Files...).
+ *
+ * SPDX-FileCopyrightText: 2026 Vista Dolphin contributors
+ *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
